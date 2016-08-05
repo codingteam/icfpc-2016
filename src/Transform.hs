@@ -131,6 +131,7 @@ cutPolygon seg (p:poly) =
     OnRight -> go OnRight ([], [p]) (poly ++ [p])
     OnLine  -> cutPolygon seg (poly ++ [p])
   where
+  tidy [] = []
   tidy input@(x:xs) =
     let xs' = reverse xs
     in  if head xs' == x
