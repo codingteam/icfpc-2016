@@ -26,9 +26,9 @@ main = do
     Left err -> fail $ show err
     Right p -> do
       let initState = [([], p)]
-      let rs = execState solver initState
+      let rs = execState simpleSolve1 initState
       let dgram = mconcat $ map drawPolygon $ map snd rs
       forM_ rs $ \(ts, p) -> do
-        print ts
+        -- print ts
         print p
       mainWith dgram
