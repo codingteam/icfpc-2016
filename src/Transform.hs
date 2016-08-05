@@ -13,9 +13,12 @@ data TranslationData = TranslationData {
 
 {- | Move skeleton and silhouette to (0, 0), then scale them to fit the
  - a square defined by (0, 0) and (1, 1). -}
-toUnitSquare :: Silhouette -> (TranslationData, Silhouette)
-toUnitSquare silhouette = (translationData, silhouette')
+toUnitSquare :: Problem -> (TranslationData, Problem)
+toUnitSquare problem = (translationData, problem')
   where
+  silhouette = pSilhouette problem
+  skeleton = pSkeleton problem
+
   points = concat silhouette
 
   xs = map fst points
@@ -33,8 +36,12 @@ toUnitSquare silhouette = (translationData, silhouette')
   scale = max (maxX - minX) (maxY - minY)
 
   translationData = TranslationData offsetX offsetY scale
-  silhouette' = map (map $ (translate offsetX) *** (translate offsetY)) silhouette
-  translate delta = (/ scale) . (+ delta)
+  silhouette' = map (map $ translatePoint offsetX offsetY) silhouette
+  skeleton' = map ((translatePoint offsetX offsetY) *** (translatePoint offsetX offsetY)) skeleton
+  translateNumber delta = (/ scale) . (+ delta)
+  translatePoint dx dy = (translateNumber dx) *** (translateNumber dy)
+
+  problem' = Problem silhouette' skeleton'
 
 {- | Invert scaling and moving applied by @toUnitSquare@. -}
 fromUnitSquare :: TranslationData -> Silhouette -> Silhouette
