@@ -2,3 +2,7 @@
 *.o
 *.hi
 *.swp
+src/.cabal-sandbox/
+src/cabal.sandbox.config
+src/visualize
+src/*.svg
