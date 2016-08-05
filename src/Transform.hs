@@ -74,6 +74,12 @@ flipPolygon seg points = map (flipPoint seg) $ reverse points
 flipSilhouette :: Segment -> Silhouette -> Silhouette
 flipSilhouette seg polys = map (flipPolygon seg) polys
 
+flipSegment :: Segment -> Segment -> Segment
+flipSegment seg (p1, p2) = (flipPoint seg p1, flipPoint seg p2)
+
+flipSkeleton :: Segment -> Skeleton -> Skeleton
+flipSkeleton seg segments = map (flipSegment seg) segments
+
 -- | Possible relative positions of line and point
 data RelativePos = OnLeft | OnLine | OnRight
   deriving (Show, Eq)
