@@ -21,4 +21,4 @@ drawProblem :: Problem -> Diagram B
 drawProblem (Problem polygons skeleton) =
   let dPolygons = foldr1 atop $ map drawPolygon polygons
       dSegments = foldr1 atop $ map drawSegment skeleton
-  in  (dPolygons # fc grey) `atop` (dSegments # lc red)
+  in  (dSegments # lc red) `atop` (dPolygons # fc grey)
