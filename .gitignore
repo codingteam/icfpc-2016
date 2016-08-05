@@ -7,3 +7,4 @@ src/cabal.sandbox.config
 src/visualize
 src/*.svg
 /src/.stack-work/
+/.idea/
