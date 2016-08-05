@@ -17,7 +17,7 @@ drawPolygon :: Polygon -> Diagram B
 drawPolygon points =
   let pts = points ++ [head points]
       color = if ccw pts then white else gray
-  in showOrigin $ (moveOriginTo $ mkPoint $ neg $ head pts) $ fc color $ strokeLoop $ closeLine $ fromVertices $ map mkPoint
+  in showOrigin $ (moveOriginTo $ mkPoint $ neg $ head pts) $ fc color $ strokeLoop $ closeLine $ fromVertices $ map mkPoint pts
   where edges ps = zip ps $ tail ps
         ccw ps = (sum $ map (\((x1, y1), (x2, y2)) -> (x2 - x1) * (y2 + y1)) (edges ps)) > 0
 
