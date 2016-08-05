@@ -64,3 +64,6 @@ flipPoint ((sx1,sy1), (sx2,sy2)) (x,y) =
 flipPolygon :: Segment -> Polygon -> Polygon
 flipPolygon seg points = map (flipPoint seg) $ reverse points
 
+flipSilhouette :: Segment -> Silhouette -> Silhouette 
+flipSilhouette seg polys = map (flipPolygon seg) polys
+
