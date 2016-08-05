@@ -2,6 +2,7 @@
 module Solver where
 
 import Control.Monad
+import Control.Monad.State
 import Data.List
 import System.FilePath
 import System.FilePath.Glob
@@ -9,6 +10,15 @@ import System.FilePath.Glob
 import Problem
 import Transform
 import Parser
+
+type TransformedPolyon = ([Fold], Polygon)
+type SolverState = [TransformedPolyon]
+data Fold = 
+    FoldLeft Segment
+  | FoldRight Segment
+  deriving (Eq, Show)
+
+type Solver a = State SolverState a
 
 isConvex :: Polygon -> Bool
 isConvex points =
@@ -29,3 +39,14 @@ findSimpleProblems dir = do
     problem <- parseProblem path
     when (isSimpleProblem problem) $
       putStrLn $ takeFileName path
+
+foldPolygonLeft :: Segment -> TransformedPolyon -> [TransformedPolyon]
+foldPolygonLeft seg (ts, p) =
+  let (p1,p2) = cutPolygon seg p
+  in  if null p2
+        then [(FoldLeft seg: ts, p1)]
+        else [(FoldLeft seg: ts, p1), (FoldLeft seg: ts, p2)]
+
+doFoldLeft :: Segment -> Solver ()
+doFoldLeft seg = do
+  modify $ \polygons -> concatMap (foldPolygonLeft seg) polygons

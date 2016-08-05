@@ -26,3 +26,10 @@ unionPolygons a b = do
   C.Polygons cr <- C.union ca cb
   return $ map clipper2polygon cr
 
+unionSilhouette :: Silhouette -> IO Polygon
+unionSilhouette [] = return []
+unionSilhouette [p] = return p
+unionSilhouette [p1,p2] = head `fmap` unionPolygons [p1] [p2]
+unionSilhouette (p:ps) = do
+  rest <- unionSilhouette ps
+  head `fmap` unionPolygons [p] [rest]
