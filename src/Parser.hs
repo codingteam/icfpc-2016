@@ -17,13 +17,17 @@ integer = do
 
 number :: Parser Number
 number = do
+  ms <- optionMaybe $ char '-'
+  let sgn = case ms of
+               Just _ -> negate 1
+               Nothing -> 1
   nstr <- many1 digit
   maybeMstr <- optionMaybe $ do
                  char '/'
                  many1 digit
   case maybeMstr of
-    Nothing -> return $ fromIntegral $ read nstr
-    Just mstr -> return $ read nstr % read mstr
+    Nothing -> return $ sgn * (fromIntegral $ read nstr)
+    Just mstr -> return $ sgn * (read nstr % read mstr)
 
 endByNewline :: Parser a -> Parser a
 endByNewline p = do
