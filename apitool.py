@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import sys
 from os.path import join
 from time import sleep
 import requests
@@ -46,9 +47,31 @@ def download_problems():
         with open("problems/problem_{}.txt".format(id), 'w') as f:
             f.write(str(blob))
 
+@rate_limited(1)
+def submit_solution(id, fname):
+    solution = open(fname).read()
+    payload = {'problem_id': id, 'solution_spec': solution}
+    url = join(API, 'solution', 'submit')
+    r = requests.post(url, headers=HEADERS, data=payload)
+    print r.text
+
+def usage():
+    print "Available commands: hello; status; download; submit problem_id solution.txt"
+    sys.exit(1)
 
 if __name__ == "__main__":
-    #hello()
-    #get_status()
-    download_problems()
+    if len(sys.argv) < 2:
+        usage()
+    command = sys.argv[1]
+    if command == 'hello':
+        hello()
+    elif command == 'status':
+        print get_status()
+    elif command == 'download':
+        download_problems()
+    elif command == 'submit':
+        submit_solution(sys.argv[2], sys.argv[3])
+    else:
+        usage()
+
 
