@@ -36,7 +36,7 @@ drawSolution path = do
          let dgram = mconcat $ map drawPolygon $ map snd foldedPolys
          {-forM_ foldedPolys $ \(ts, p) -> do
            putStrLn (formatPolygon p)-}
-         putStrLn $ formatSolution $ foldedPolys
+         putStr $ formatSolution $ foldedPolys
          return dgram
     else fail $ "Problem is not so simple"
 

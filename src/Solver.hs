@@ -61,7 +61,7 @@ elongate ((x1,y1), (x2,y2)) =
 foldPolygonLeft :: Segment -> TransformedPolyon -> [TransformedPolyon]
 foldPolygonLeft seg (ts, p) =
   let (p1,p2) = cutPolygon seg p
-  in trace ("Cut <" ++ formatPolygon p ++ "> with <" ++ formatSegment seg ++ ">:\n\t<" ++ 
+  in trace ("Fold Left: Cut <" ++ formatPolygon p ++ "> with <" ++ formatSegment seg ++ ">:\n\t<" ++ 
             formatPolygon p1 ++ ">\n\t<" ++ formatPolygon p2 ++ ">") $
       if null p2
         then [(FoldLeft seg: ts, {-flipPolygon seg-} p1)]
@@ -72,7 +72,9 @@ foldPolygonLeft seg (ts, p) =
 foldPolygonRight :: Segment -> TransformedPolyon -> [TransformedPolyon]
 foldPolygonRight seg (ts, p) =
   let (p1,p2) = cutPolygon seg p
-  in  if null p2
+  in trace ("Fold Right: Cut <" ++ formatPolygon p ++ "> with <" ++ formatSegment seg ++ ">:\n\t<" ++ 
+            formatPolygon p1 ++ ">\n\t<" ++ formatPolygon p2 ++ ">") $
+      if null p2
         then [(ts, p1)]
         else if null p1
              then [(FoldRight seg: ts, {-flipPolygon seg-} p2)]
