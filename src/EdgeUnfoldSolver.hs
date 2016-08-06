@@ -43,7 +43,9 @@ findUnfoldCandidates vertices segments =
   isUnwrapCandidate vertices segment = do
     let distances = map (distanceFromLine segment) vertices
     let signs = map signum $ filter (/= 0) distances
-    and $ map (== head signs) (tail signs)
+    case signs of
+      (x:xs) -> and $ map (== head signs) (tail signs)
+      _      -> False
   distanceFromLine segment vertex = do
     let ((x0, y0), (x1, y1)) = segment
     let (x2, y2) = vertex

@@ -126,15 +126,17 @@ data Line = Line {
 } deriving (Show, Eq)
 
 toLine :: Segment -> Line
-toLine ((x1, y1), (x2, y2)) =
-  let a = y1 - y2
-      b = x2 - x1
-      c = x1*y2 - x2*y1
+toLine (p1@(x1, y1), p2@(x2, y2))
+  | p1 == p2 = error "Transform.toLine: both points of given segment are the same!"
+  | otherwise =
+      let a = y1 - y2
+          b = x2 - x1
+          c = x1*y2 - x2*y1
 
-      gn = foldl1' gcd $ map numerator [a, b, c]
-      gd = foldl1' gcd $ map denominator [a, b, c]
-      g = gn % gd
-  in  Line (a/g) (b/g) (c/g)
+          gn = foldl1' gcd $ map numerator [a, b, c]
+          gd = foldl1' gcd $ map denominator [a, b, c]
+          g = gn % gd
+      in  Line (a/g) (b/g) (c/g)
 
 x /. y = trace ("Y: " ++ show y) $ x / y
 
@@ -217,17 +219,19 @@ cutPolygon line polygon =
 -- | Combines two skeletons into one. Assumes that both skeletons start and end
 -- at the same point, i.e. start point of @s1@ is the same as @s2@'s.
 mergeSkeletons :: Skeleton -> Skeleton -> Skeleton
-mergeSkeletons s1 s2 = simplify $ concat [m1, [l1], [f2], m2, [l2], [f1]]
+mergeSkeletons s1 s2 = simplify $ concat [m1, [l1], s2', [f1]]
   where
   (f1, m1, l1) = chop s1
-  (f2, m2, l2) = chop $ invert [] s2
+  s2' = invert [] s2
 
   chop :: Skeleton -> (Segment, [Segment], Segment)
-  chop (first:rest) =
-    let rest' = reverse rest
-        last = head rest'
-        middle = reverse $ tail rest'
-    in  (first, middle, last)
+  chop x@(first:rest)
+    | length x < 2 = error "Impossibru"
+    | otherwise =
+        let rest' = reverse rest
+            last = head rest'
+            middle = reverse $ tail rest'
+        in  (first, middle, last)
 
   -- Inverses the order and direction of vectors comprising a skeleton
   invert :: [Segment] -> Skeleton -> Skeleton
@@ -247,12 +251,13 @@ mergeSkeletons s1 s2 = simplify $ concat [m1, [l1], [f2], m2, [l2], [f1]]
               _   -> go input
     where
     go [] = []
+    go [x] = [x]
     go (x:y:rest) = concat $ [combine x y, simplify rest]
 
   combine :: Segment -> Segment -> [Segment]
-  combine seg1@(s, _) seg2@(_, f) =
+  combine seg1 seg2 =
     let line1 = toLine seg1
         line2 = toLine seg2
     in  if line1 == line2
-          then [(s, f)]
+          then [seg1]
           else [seg1, seg2]
