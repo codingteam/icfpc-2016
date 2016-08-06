@@ -11,6 +11,11 @@ import Problem
 
 type SegmentAttribution = (Segment, [Polygon])
 
+facetsFromSkeleton :: Skeleton -> [Polygon]
+facetsFromSkeleton skeleton = []
+  where
+    skeletonNodes segments = nub $ concat $ unzip segments
+
 isFreePolygon :: Polygon -> [SegmentAttribution] -> Bool
 isFreePolygon poly segmentAttribution = do
   let segments = filter (\(seg, _) -> seg `elem` (toSegments poly)) segmentAttribution
