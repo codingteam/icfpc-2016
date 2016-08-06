@@ -161,7 +161,9 @@ cutPolygon :: Segment -> Polygon -> (Polygon, Polygon)
 cutPolygon _   [] = ([], [])
 cutPolygon line polygon =
       if any (onLine line) edges -- one of polygon edges 
-        then (polygon, [])
+        then if any (\p -> p `relativeTo` line == OnLeft) polygon
+             then (polygon, [])
+             else ([], polygon)
         else if all (\p -> p `relativeTo` line `elem` (OnLine, OnLeft)) polygon
                then (polygon, [])
                else if all (\p -> p `relativeTo` line `elem` (OnLine, OnRight)) polygon
