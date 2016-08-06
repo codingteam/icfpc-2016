@@ -1,4 +1,3 @@
-{-# LANGUAGE NoMonomorphismRestriction #-}
 
 module Main where
 
@@ -13,17 +12,19 @@ import Diagrams.Backend.SVG.CmdLine
 import Problem
 import Solver
 import Solution
+import ConvexHull
 import Parser
 import Draw
 
 drawSolution :: FilePath -> IO (Diagram B)
 drawSolution path = do
     problem <- parseProblem path
-    if isSimpleProblem problem
-      then do 
+    case problem of
+      Problem [polygon] _ -> do 
          let polygon = head (pSilhouette problem)
-         runSimpleSolver polygon drawSvg printSolution
-      else fail $ "Problem is not so simple"
+             hull = convexHull polygon
+         runSimpleSolver hull drawSvg printSolution
+      _ -> fail $ "Problem is not so simple"
   where
     drawSvg :: [Polygon] -> Diagram B
     drawSvg unfoldedPolys = do
@@ -35,4 +36,3 @@ drawSolution path = do
 main :: IO ()
 main = do
   mainWith drawSolution
-

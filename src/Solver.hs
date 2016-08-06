@@ -1,4 +1,4 @@
-
+{-# LANGUAGE NoMonomorphismRestriction #-}
 module Solver where
 
 import Control.Monad
@@ -21,6 +21,10 @@ data Fold =
   deriving (Eq, Show)
 
 type Solver a = State SolverState a
+
+unitSquare :: Polygon
+unitSquare = 
+  [(0,0), (1,0), (1,1), (0,1)]
 
 isConvex :: Polygon -> Bool
 isConvex points =
@@ -129,4 +133,12 @@ simpleSolve1 poly = do
     --doFoldLeft edge
     doAutoFold ctr edge
   removeSinglePoints
+
+runSimpleSolver :: Polygon -> (Silhouette -> a) -> ([TransformedPolyon] -> IO b) -> IO a
+runSimpleSolver polygon withUnfolded withFolded = do
+         let initState = [([], unitSquare)]
+         let foldedPolys = execState (simpleSolve1 polygon) initState
+             unfoldedPolys = map applyTransform foldedPolys
+         withFolded foldedPolys
+         return $ withUnfolded unfoldedPolys
 
