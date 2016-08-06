@@ -3,18 +3,24 @@ module Main where
 import Control.Monad
 import Data.Graph.AStar
 import Data.List
+import Data.Maybe
+import Diagrams.Backend.SVG.CmdLine
+import Diagrams.Prelude hiding (distance, Point)
 import System.Environment
 
 import qualified Data.HashSet as S
 
+import Draw
 import EdgeUnfoldSolver
 import Parser
 import Problem
 import Transform
 
 main :: IO ()
-main = do
-  [path] <- getArgs
+main = mainWith mkDiagram
+
+mkDiagram :: FilePath -> IO (Diagram B)
+mkDiagram path = do
   problem <- parseProblem path
   let solution = aStar
                    getCandidates
@@ -23,6 +29,10 @@ main = do
                    goal
                    (pSkeleton problem)
   print solution
+  return $
+    case solution of
+      Just (_:s:_) -> (# lc red) $ foldr1 atop $ map drawSegment s
+      _ -> fromVertices []
 
 for :: [a] -> (a -> b) -> [b]
 for = flip map
@@ -58,11 +68,10 @@ distance :: Skeleton -> Skeleton -> Integer
 distance _ _ = 1
 
 heuristic :: Skeleton -> Integer
-heuristic skel = ceiling $ abs $ 4 - (sum $ map (uncurry dist) skel)
+heuristic skel = 0
 
 goal :: Skeleton -> Bool
-goal skel = (length skel == 4)
-         && (4 == sum (map (uncurry dist) skel))
+goal skel = ((length skel) == 4)
 
 dist :: Point -> Point -> Double
 dist (x1, y1) (x2, y2) = sqrt $ fromRational $ (x1 - x2)^2 + (y1 - y2)^2
