@@ -126,15 +126,17 @@ data Line = Line {
 } deriving (Show, Eq)
 
 toLine :: Segment -> Line
-toLine ((x1, y1), (x2, y2)) =
-  let a = y1 - y2
-      b = x2 - x1
-      c = x1*y2 - x2*y1
+toLine (p1@(x1, y1), p2@(x2, y2))
+  | p1 == p2 = error "Transform.toLine: both points of given segment are the same!"
+  | otherwise =
+      let a = y1 - y2
+          b = x2 - x1
+          c = x1*y2 - x2*y1
 
-      gn = foldl1' gcd $ map numerator [a, b, c]
-      gd = foldl1' gcd $ map denominator [a, b, c]
-      g = gn % gd
-  in  Line (a/g) (b/g) (c/g)
+          gn = foldl1' gcd $ map numerator [a, b, c]
+          gd = foldl1' gcd $ map denominator [a, b, c]
+          g = gn % gd
+      in  Line (a/g) (b/g) (c/g)
 
 x /. y = trace ("Y: " ++ show y) $ x / y
 
