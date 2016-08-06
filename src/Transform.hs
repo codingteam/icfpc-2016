@@ -2,19 +2,29 @@
 module Transform where
 
 import Control.Arrow
+import Data.Default
 
 import Problem
 
+data ToUnitSquareConfig = ToUnitSquareConfig {
+    doMove  :: Bool
+  , doScale :: Bool
+} deriving Show
+
+instance Default ToUnitSquareConfig where
+  def = ToUnitSquareConfig True True
+
 data TranslationData = TranslationData {
-    offsetX :: Number
+    conf    :: ToUnitSquareConfig
+  , offsetX :: Number
   , offsetY :: Number
   , scale   :: Number
 } deriving Show
 
 {- | Move skeleton and silhouette to (0, 0), then scale them to fit the
  - a square defined by (0, 0) and (1, 1). -}
-toUnitSquare :: Problem -> (TranslationData, Problem)
-toUnitSquare problem = (translationData, problem')
+toUnitSquare :: ToUnitSquareConfig -> Problem -> (TranslationData, Problem)
+toUnitSquare conf problem = (translationData, problem')
   where
   silhouette = pSilhouette problem
   skeleton = pSkeleton problem
@@ -24,8 +34,9 @@ toUnitSquare problem = (translationData, problem')
   xs = map fst points
   ys = map snd points
 
-  minX = minimum xs
-  minY = minimum ys
+  (minX, minY) = if doMove conf
+                   then (minimum xs, minimum ys)
+                   else (minimum $ 0:xs, minimum $ 0:ys)
 
   offsetX = negate minX
   offsetY = negate minY
@@ -35,20 +46,26 @@ toUnitSquare problem = (translationData, problem')
 
   scale = max (maxX - minX) (maxY - minY)
 
-  translationData = TranslationData offsetX offsetY scale
+  translationData = TranslationData conf offsetX offsetY scale
   silhouette' = map (map $ translatePoint offsetX offsetY) silhouette
   skeleton' = map ((translatePoint offsetX offsetY) *** (translatePoint offsetX offsetY)) skeleton
-  translateNumber delta = (/ scale) . (+ delta)
+  translateNumber delta point =
+    let p'  = if doMove conf then point + delta else point
+        p'' = if doScale conf then p' / scale else p'
+    in  p''
   translatePoint dx dy = (translateNumber dx) *** (translateNumber dy)
 
   problem' = Problem silhouette' skeleton'
 
 {- | Invert scaling and moving applied by @toUnitSquare@. -}
 fromUnitSquare :: TranslationData -> Silhouette -> Silhouette
-fromUnitSquare (TranslationData dx dy scale) silhouette = silhouette'
+fromUnitSquare (TranslationData conf dx dy scale) silhouette = silhouette'
   where
   silhouette' = map (map $ (translate dx) *** (translate dy)) silhouette
-  translate delta = (\x -> x - delta) . (* scale)
+  translate delta point =
+    let p'  = if doScale conf then point * scale else point
+        p'' = if doMove conf then p' - delta else p'
+    in  p''
 
 -- | Flip point relative to segment
 flipPoint :: Segment -> Point -> Point
