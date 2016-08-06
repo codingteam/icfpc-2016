@@ -14,18 +14,6 @@ formatSolution tps =
       vertices = allVertices polys
   in  srcPart vertices ++ facetsPart polys vertices ++ dstPart tps vertices
 
-formatNumber :: Number -> String
-formatNumber x = go (numerator x) (denominator x)
-  where 
-    go n 1 = show n
-    go n d = show n ++ "/" ++ show d
-
-formatPoint :: Point -> String
-formatPoint (x,y) = formatNumber x ++ "," ++ formatNumber y
-
-formatPolygon :: Polygon -> String
-formatPolygon poly = unwords $ map formatPoint poly
-
 allVertices :: [Polygon] -> [Point]
 allVertices polys = nub $ sort $ concat polys
 

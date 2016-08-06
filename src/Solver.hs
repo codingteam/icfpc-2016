@@ -61,20 +61,22 @@ elongate ((x1,y1), (x2,y2)) =
 foldPolygonLeft :: Segment -> TransformedPolyon -> [TransformedPolyon]
 foldPolygonLeft seg (ts, p) =
   let (p1,p2) = cutPolygon seg p
-  in  if null p2
+  in trace ("Cut <" ++ formatPolygon p ++ "> with <" ++ formatSegment seg ++ ">:\n\t<" ++ 
+            formatPolygon p1 ++ ">\n\t<" ++ formatPolygon p2 ++ ">") $
+      if null p2
         then [(FoldLeft seg: ts, {-flipPolygon seg-} p1)]
         else if null p1
-             then [(FoldLeft seg: ts, p2)]
-             else [(FoldLeft seg: ts, {-flipPolygon seg-} p1), (FoldLeft seg: ts, p2)]
+             then [(ts, p2)]
+             else [(FoldLeft seg: ts, {-flipPolygon seg-} p1), (ts, p2)]
 
 foldPolygonRight :: Segment -> TransformedPolyon -> [TransformedPolyon]
 foldPolygonRight seg (ts, p) =
   let (p1,p2) = cutPolygon seg p
   in  if null p2
-        then [(FoldRight seg: ts, p1)]
+        then [(ts, p1)]
         else if null p1
-             then [(FoldLeft seg: ts, {-flipPolygon seg-} p2)]
-             else [(FoldLeft seg: ts, p1), (FoldLeft seg: ts, {-flipPolygon seg-} p2)]
+             then [(FoldRight seg: ts, {-flipPolygon seg-} p2)]
+             else [(ts, p1), (FoldRight seg: ts, {-flipPolygon seg-} p2)]
 
 doFoldLeft :: Segment -> Solver ()
 doFoldLeft seg = do
@@ -83,6 +85,12 @@ doFoldLeft seg = do
 doFoldRight :: Segment -> Solver ()
 doFoldRight seg = do
   modify $ \polygons -> concatMap (foldPolygonRight seg) polygons
+
+doAutoFold :: Point -> Segment -> Solver ()
+doAutoFold ctr seg =
+  case ctr `relativeTo` seg of
+    OnLeft -> trace ("Fold Right around " ++ formatSegment seg) $ doFoldRight seg
+    _ -> trace ("Fold Left around " ++ formatSegment seg) $ doFoldLeft seg
 
 unfoldPolygon :: TransformedPolyon -> Polygon
 unfoldPolygon (transforms, p) = applyTransform (reverse transforms, p)
@@ -96,10 +104,20 @@ applyTransform (transforms, p) = go transforms p
     apply (FoldLeft seg) p = flipPolygon seg p
     apply (FoldRight seg) p = flipPolygon seg p
 
+center :: Polygon -> Point
+center poly = 
+    let (sx,sy) = foldr plus (0,0) poly
+        n = fromIntegral (length poly)
+    in  (sx / n, sy / n)
+  where
+    plus (x1,y1) (x2,y2) = (x1+x2, y1+y2)
+
 simpleSolve1 :: Polygon -> Solver ()
 simpleSolve1 poly = do
   let edges = zip poly (tail poly) ++ [(last poly, head poly)]
+      ctr = center poly
   forM_ edges $ \edge -> 
-    -- doFoldRight (elongate edge)
-    doFoldLeft edge
+    --doFoldRight (elongate edge)
+    --doFoldLeft edge
+    doAutoFold ctr (elongate edge)
 

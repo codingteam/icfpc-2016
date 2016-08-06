@@ -71,6 +71,10 @@ fromUnitSquare (TranslationData conf dx dy scale) silhouette = silhouette'
         p'' = if doMove conf then p' - delta else p'
     in  p''
 
+traceResult :: String -> Polygon -> Polygon
+traceResult msg x =
+  trace (msg ++ ": " ++ formatPolygon x) x
+
 -- | Flip point relative to segment
 flipPoint :: Segment -> Point -> Point
 flipPoint ((sx1,sy1), (sx2,sy2)) (x,y) =
@@ -90,7 +94,9 @@ flipPoint ((sx1,sy1), (sx2,sy2)) (x,y) =
 
 -- | Flip polygon relative to segment
 flipPolygon :: Segment -> Polygon -> Polygon
-flipPolygon seg points = map (flipPoint seg) $ reverse points
+flipPolygon seg points =
+  traceResult ("Flip <" ++ formatPolygon points ++ "> around <" ++ formatSegment seg ++ ">") $
+    map (flipPoint seg) $ points
 
 flipSilhouette :: Segment -> Silhouette -> Silhouette
 flipSilhouette seg polys = map (flipPolygon seg) polys
