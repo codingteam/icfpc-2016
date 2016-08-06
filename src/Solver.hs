@@ -11,6 +11,8 @@ import Problem
 import Transform
 import Parser
 
+import Debug.Trace
+
 type TransformedPolyon = ([Fold], Polygon)
 type SolverState = [TransformedPolyon]
 data Fold = 
@@ -40,13 +42,61 @@ findSimpleProblems dir = do
     when (isSimpleProblem problem) $
       putStrLn $ takeFileName path
 
+elongate :: Segment -> Segment
+elongate ((x1,y1), (x2,y2)) = 
+  if x1 == x2
+    then ((x1, 0), (x1, 1))
+    else if y1 == y2
+           then ((0,y1), (1, y1))
+           else let k = (y2-y1) / (x2-x1)
+                    b = y1 - k*x1
+                in if k > 1
+                     then let x1' = -b/k
+                              x2' = (1-b)/k
+                          in  ((x1', 0), (x2', 1))
+                     else let y1' = b
+                              y2' = k+b
+                          in ((0,y1'), (1, y2'))
+
 foldPolygonLeft :: Segment -> TransformedPolyon -> [TransformedPolyon]
 foldPolygonLeft seg (ts, p) =
   let (p1,p2) = cutPolygon seg p
   in  if null p2
-        then [(FoldLeft seg: ts, p1)]
-        else [(FoldLeft seg: ts, p1), (FoldLeft seg: ts, p2)]
+        then [(FoldLeft seg: ts, {-flipPolygon seg-} p1)]
+        else if null p1
+             then [(FoldLeft seg: ts, p2)]
+             else [(FoldLeft seg: ts, {-flipPolygon seg-} p1), (FoldLeft seg: ts, p2)]
+
+foldPolygonRight :: Segment -> TransformedPolyon -> [TransformedPolyon]
+foldPolygonRight seg (ts, p) =
+  let (p1,p2) = cutPolygon seg p
+  in  if null p2
+        then [(FoldRight seg: ts, p1)]
+        else if null p1
+             then [(FoldLeft seg: ts, {-flipPolygon seg-} p2)]
+             else [(FoldLeft seg: ts, p1), (FoldLeft seg: ts, {-flipPolygon seg-} p2)]
 
 doFoldLeft :: Segment -> Solver ()
 doFoldLeft seg = do
   modify $ \polygons -> concatMap (foldPolygonLeft seg) polygons
+
+doFoldRight :: Segment -> Solver ()
+doFoldRight seg = do
+  modify $ \polygons -> concatMap (foldPolygonRight seg) polygons
+
+unfoldPolygon :: TransformedPolyon -> Polygon
+unfoldPolygon (transforms, p) = go (reverse transforms) p
+  where
+    go [] p = p
+    go (t:ts) p = go ts $ undo t p
+
+    undo (FoldLeft seg) p = flipPolygon seg p
+    undo (FoldRight seg) p = flipPolygon seg p
+
+simpleSolve1 :: Polygon -> Solver ()
+simpleSolve1 poly = do
+  let edges = zip poly (tail poly) ++ [(last poly, head poly)]
+  forM_ edges $ \edge -> 
+    -- doFoldRight (elongate edge)
+    doFoldLeft edge
+

@@ -1,2 +1,5 @@
 [*.hs]
 indent_size = 2
+
+[*.cabal]
+indent_size = 2
