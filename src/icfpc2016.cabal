@@ -38,6 +38,7 @@ executable testSolver
   other-modules:       Draw
                      , Parser
                      , Problem
+                     , Solution
                      , Solver
                      , Transform
                      , EdgeUnfoldSolver
