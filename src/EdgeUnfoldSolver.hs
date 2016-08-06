@@ -9,16 +9,27 @@ import Debug.Trace
 
 import Problem
 
-findSharedEdges :: [Polygon] -> [(Segment, [Polygon])]
+type SegmentAttribution = (Segment, [Polygon])
+
+isFreePolygon :: Polygon -> [SegmentAttribution] -> Bool
+isFreePolygon poly segmentAttribution = do
+  let segments = filter (\(seg, _) -> seg `elem` (toSegments poly)) segmentAttribution
+  let shareCount = length $ filter (>1) $ map (\(_, polys) -> length polys) segments
+  not $ shareCount > 1
+
+findSharedEdges :: [Polygon] -> [SegmentAttribution]
 findSharedEdges polygons =
   map (\s -> (s, filter (containsSegment s) polygons)) $ nub $ concat $ map toSegments polygons
   where
-    toSegments [] = []
-    toSegments input@(point : _) = recMakeSegments (input ++ [point])
+    containsSegment segment polygon = segment `elem` toSegments polygon
+
+toSegments :: Polygon -> [Segment]
+toSegments [] = []
+toSegments input@(point : _) = recMakeSegments (input ++ [point])
+  where
     recMakeSegments [] = []
     recMakeSegments (_ : []) = []
-    recMakeSegments (point : points) = (point, (head points)) : recMakeSegments points
-    containsSegment segment polygon = segment `elem` toSegments polygon
+    recMakeSegments (p : pts) = (p, (head pts)) : recMakeSegments pts
 
 findUnfoldCandidates :: [Point] -> [Segment] -> [Segment]
 findUnfoldCandidates vertices segments =
