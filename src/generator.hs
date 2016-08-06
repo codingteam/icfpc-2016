@@ -3,6 +3,7 @@ module Main where
 
 import Data.Ratio
 
+import Folder
 import Printer
 import Problem
 import Solver
@@ -30,15 +31,6 @@ initialProblem = Problem {
 
 initialSegment :: Segment
 initialSegment = ((0, 0), ((1 % 2), (1 % 2)))
-
-foldProblem :: Segment -> Problem -> Problem
-foldProblem seg problem =
-  let silhouette = pSilhouette problem
-      skeleton = pSkeleton problem
-  in Problem {
-    pSilhouette = silhouette,
-    pSkeleton = skeleton
-  }
 
 main :: IO ()
 main = putStrLn $ serializeProblem $ foldProblem initialSegment initialProblem
