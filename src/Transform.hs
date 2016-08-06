@@ -249,6 +249,7 @@ mergeSkeletons s1 s2 = simplify $ concat [m1, [l1], [f2], m2, [l2], [f1]]
               _   -> go input
     where
     go [] = []
+    go [x] = [x]
     go (x:y:rest) = concat $ [combine x y, simplify rest]
 
   combine :: Segment -> Segment -> [Segment]
