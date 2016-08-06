@@ -16,14 +16,14 @@
 ;;cuts a polygon along an edge
 (define (cut-polygon poly edge)
   (let ((vertices (polygon-vertices poly)))
-    (values (polygon '(,@(left-points vertices edge) ,(edge-start edge) ,(edge-end edge)))
-            (polygon '(,@(right-points vertices edge) ,(edge-start edge) ,(edge-end edge))))))
+    (values (polygon `(,@(left-points vertices edge) ,(edge-end edge) ,(edge-start edge)))
+            (polygon `(,@(right-points vertices edge) ,(edge-end edge) ,(edge-start edge))))))
 
-(define (left-points polygon edge)
-  (takef (polygon-vertices polygon) (lambda (vertex) (< 0 (distance vertex edge)))))
+(define (left-points vertices edge)
+  (filter (lambda (vertex) (negative? (distance vertex edge))) vertices))
 
-(define (right-points polygon edge)
-  (takef (polygon-vertices polygon) (lambda (vertex) (> 0 (distance vertex edge)))))
+(define (right-points vertices edge)
+  (filter (lambda (vertex) (positive? (distance vertex edge))) vertices))
 
 (define (distance vertex edge)
   (let ((x0 (point-x (edge-start edge)))
@@ -34,3 +34,6 @@
         (y2 (point-y vertex)))
     (- (* (- x1 x0) (- y2 y0))
        (* (- x2 x0) (- y1 y0)))))
+
+(define poly (polygon (list (point 0 0) (point 1 0) (point 1 1) (point 0 1))))
+(cut-polygon poly (edge (point 1/2 0) (point 1/2 1)))
