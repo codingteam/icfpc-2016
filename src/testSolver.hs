@@ -24,18 +24,23 @@ unitSquare :: Polygon
 unitSquare = 
   [(0,0), (1,0), (1,1), (0,1)]
 
+drawSolution :: FilePath -> IO (Diagram B)
+drawSolution path = do
+  problem <- parseProblem path
+  if isSimpleProblem problem
+    then do
+         let p = head (pSilhouette problem)
+         let initState = [([], unitSquare)]
+         let foldedPolys = execState (simpleSolve1 p) initState
+             unfoldedPolys = map unfoldPolygon foldedPolys
+         let dgram = mconcat $ map drawPolygon $ map snd foldedPolys
+         {-forM_ foldedPolys $ \(ts, p) -> do
+           putStrLn (formatPolygon p)-}
+         putStrLn $ formatSolution $ foldedPolys
+         return dgram
+    else fail $ "Problem is not so simple"
+
 main :: IO ()
 main = do
-  text <- getContents
-  case parse pPolygon "<input>" text of
-    Left err -> fail $ show err
-    Right p -> do
-      let initState = [([], unitSquare)]
-      let foldedPolys = execState (simpleSolve1 p) initState
-          unfoldedPolys = map unfoldPolygon foldedPolys
-      let dgram = mconcat $ map drawPolygon $ map snd foldedPolys
-      {-forM_ foldedPolys $ \(ts, p) -> do
-        putStrLn (formatPolygon p)-}
-      mainWith dgram
-      putStrLn $ formatSolution $ foldedPolys
+  mainWith drawSolution
 
