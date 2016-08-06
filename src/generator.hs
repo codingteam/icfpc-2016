@@ -1,11 +1,15 @@
 
 module Main where
 
+import Control.Monad
+import Control.Monad.State
 import Data.Ratio
+import System.Random
 
 import Folder
 import Printer
 import Problem
+import Solution
 import Solver
 
 fieldSize :: Number
@@ -14,23 +18,19 @@ fieldSize = 1 / 1
 squarePolygon :: Polygon
 squarePolygon = [(0, 0), (fieldSize, 0), (fieldSize, fieldSize), (0, fieldSize)]
 
-squareSkeleton :: Skeleton
-squareSkeleton =
-  [
-    ((0, 0), (fieldSize, 0)),
-    ((fieldSize, 0), (fieldSize, fieldSize)),
-    ((fieldSize, fieldSize), (0, fieldSize)),
-    ((0, fieldSize), (0, 0))
-  ]
-
-initialProblem :: Problem
-initialProblem = Problem {
-  pSilhouette = [squarePolygon],
-  pSkeleton = squareSkeleton
-}
-
-initialSegment :: Segment
-initialSegment = ((0, 0), ((1 % 2), (1 % 2)))
+randomFold :: StdGen -> Solver ()
+randomFold rng = do
+  let segs = take 5 randomSegments
+  let ctr = center squarePolygon
+  forM_ segs $ \e -> doAutoFold ctr (elongate e)
+  where
+    randomSegments = zip randomPoints (tail randomPoints)
+    randomPoints = zip randomRatios (tail randomRatios)
+    randomRatios = map (\(x, y) -> (min x y) % (max x y)) $ zip randomNumbers (tail randomNumbers)
+    randomNumbers = (randoms rng :: [Integer])
 
 main :: IO ()
-main = putStrLn $ serializeProblem $ foldProblem initialSegment initialProblem
+main = do
+  rng <- newStdGen
+  let problem = execState (randomFold rng) [([], squarePolygon)]
+  putStrLn $ formatSolution $ problem

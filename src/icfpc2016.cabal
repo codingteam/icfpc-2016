@@ -71,6 +71,7 @@ executable generator
                      , diagrams-lib
                      , diagrams-svg
                      , data-default
+                     , random
   default-language:    Haskell2010
 
 executable unfoldingSolver
