@@ -223,11 +223,13 @@ mergeSkeletons s1 s2 = simplify $ concat [m1, [l1], [f2], m2, [l2], [f1]]
   (f2, m2, l2) = chop $ invert [] s2
 
   chop :: Skeleton -> (Segment, [Segment], Segment)
-  chop (first:rest) =
-    let rest' = reverse rest
-        last = head rest'
-        middle = reverse $ tail rest'
-    in  (first, middle, last)
+  chop x@(first:rest)
+    | length x < 2 = error "Impossibru"
+    | otherwise =
+        let rest' = reverse rest
+            last = head rest'
+            middle = reverse $ tail rest'
+        in  (first, middle, last)
 
   -- Inverses the order and direction of vectors comprising a skeleton
   invert :: [Segment] -> Skeleton -> Skeleton
