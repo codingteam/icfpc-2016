@@ -85,13 +85,16 @@ doFoldRight seg = do
   modify $ \polygons -> concatMap (foldPolygonRight seg) polygons
 
 unfoldPolygon :: TransformedPolyon -> Polygon
-unfoldPolygon (transforms, p) = go (reverse transforms) p
+unfoldPolygon (transforms, p) = applyTransform (reverse transforms, p)
+
+applyTransform :: TransformedPolyon -> Polygon
+applyTransform (transforms, p) = go transforms p
   where
     go [] p = p
-    go (t:ts) p = go ts $ undo t p
+    go (t:ts) p = go ts $ apply t p
 
-    undo (FoldLeft seg) p = flipPolygon seg p
-    undo (FoldRight seg) p = flipPolygon seg p
+    apply (FoldLeft seg) p = flipPolygon seg p
+    apply (FoldRight seg) p = flipPolygon seg p
 
 simpleSolve1 :: Polygon -> Solver ()
 simpleSolve1 poly = do
