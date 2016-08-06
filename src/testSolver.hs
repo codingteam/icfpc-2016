@@ -11,6 +11,7 @@ import Diagrams.Backend.SVG.CmdLine
 
 import Problem
 import Solver
+import Solution
 import Parser
 import Draw
 
@@ -33,8 +34,8 @@ main = do
       let foldedPolys = execState (simpleSolve1 p) initState
           unfoldedPolys = map unfoldPolygon foldedPolys
       let dgram = mconcat $ map drawPolygon $ map snd foldedPolys
-      forM_ foldedPolys $ \(ts, p) -> do
-        -- print ts
-        print p
+      {-forM_ foldedPolys $ \(ts, p) -> do
+        putStrLn (formatPolygon p)-}
       mainWith dgram
+      putStrLn $ formatSolution $ foldedPolys
 

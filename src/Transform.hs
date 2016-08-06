@@ -210,11 +210,15 @@ cutPolygon line polygon =
 
     toLeftPolygon :: Point -> State CutterState ()
     toLeftPolygon p =
-      modify $ \(l,r) -> (l ++ [p], r)
+      modify $ \(l,r) -> if p `elem` l
+                           then (l,r)
+                           else (l ++ [p], r)
 
     toRightPolygon :: Point -> State CutterState ()
     toRightPolygon p =
-      modify $ \(l,r) -> (l, r ++ [p])
+      modify $ \(l,r) -> if p `elem` r
+                           then (l,r)
+                           else (l, r ++ [p])
 
 -- | Combines two skeletons into one. Assumes that both skeletons start and end
 -- at the same point, i.e. start point of @s1@ is the same as @s2@'s.
