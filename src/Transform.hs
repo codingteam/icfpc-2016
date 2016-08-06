@@ -189,6 +189,22 @@ cutPolygon line polygon =
       let sideStart = start `relativeTo` line
           sideEnd   = end   `relativeTo` line
       case (sideStart, sideEnd) of
+        (OnLeft, OnLine) -> do
+            toLeftPolygon start 
+            toLeftPolygon end 
+            toRightPolygon end
+        (OnLine, OnLeft) -> do
+            toLeftPolygon start 
+            toRightPolygon start
+            toLeftPolygon end 
+        (OnRight, OnLine) -> do
+            toRightPolygon start
+            toLeftPolygon end 
+            toRightPolygon end
+        (OnLine, OnRight) -> do
+            toRightPolygon start
+            toLeftPolygon end 
+            toRightPolygon end
         (OnLeft, OnLeft) -> do
             toLeftPolygon start
             toLeftPolygon end
