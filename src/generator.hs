@@ -15,19 +15,22 @@ import Solver
 fieldSize :: Number
 fieldSize = 1 / 1
 
+nOfCuts = 1
+maxDenom = 2^16
+
 squarePolygon :: Polygon
 squarePolygon = [(0, 0), (fieldSize, 0), (fieldSize, fieldSize), (0, fieldSize)]
 
 randomFold :: StdGen -> Solver ()
 randomFold rng = do
-  let segs = take 5 randomSegments
+  let segs = take nOfCuts randomSegments
   let ctr = center squarePolygon
   forM_ segs $ \e -> doAutoFold ctr (elongate e)
   where
     randomSegments = zip randomPoints (tail randomPoints)
     randomPoints = zip randomRatios (tail randomRatios)
     randomRatios = map (\(x, y) -> (min x y) % (max x y)) $ zip randomNumbers (tail randomNumbers)
-    randomNumbers = (randoms rng :: [Integer])
+    randomNumbers = (randomRs (1, maxDenom) rng :: [Integer])
 
 main :: IO ()
 main = do
