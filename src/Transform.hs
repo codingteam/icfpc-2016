@@ -199,7 +199,7 @@ cutPolygon line polygon =
             toRightPolygon end
         (OnLine, OnRight) -> do
             toRightPolygon start
-            toLeftPolygon end 
+            toLeftPolygon start 
             toRightPolygon end
         (OnLeft, OnLeft) -> do
             toLeftPolygon start 

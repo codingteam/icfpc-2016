@@ -131,7 +131,9 @@ simpleSolve1 poly = do
   forM_ edges $ \edge -> 
     --doFoldRight (elongate edge)
     --doFoldLeft edge
-    doAutoFold ctr edge
+    doAutoFold ctr (elongate edge)
+  forM_ edges $ \edge -> 
+    doAutoFold ctr (elongate edge)
   removeSinglePoints
 
 runSimpleSolver :: Polygon -> (Silhouette -> a) -> ([TransformedPolyon] -> IO b) -> IO a
