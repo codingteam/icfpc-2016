@@ -62,10 +62,10 @@ foldPolygonLeft :: Segment -> TransformedPolyon -> [TransformedPolyon]
 foldPolygonLeft seg (ts, p) =
   let (p1,p2) = cutPolygon seg p
   in  if null p2
-        then [(FoldLeft seg: ts, p1)]
+        then [(FoldLeft seg: ts, {-flipPolygon seg-} p1)]
         else if null p1
              then [(FoldLeft seg: ts, p2)]
-             else [(FoldLeft seg: ts, p1), (FoldLeft seg: ts, p2)]
+             else [(FoldLeft seg: ts, {-flipPolygon seg-} p1), (FoldLeft seg: ts, p2)]
 
 doFoldLeft :: Segment -> Solver ()
 doFoldLeft seg = do
