@@ -10,7 +10,8 @@ import Data.Ratio
 
 import Problem
 
-import Debug.Trace
+-- import Debug.Trace
+trace _ x = x
 
 data ToUnitSquareConfig = ToUnitSquareConfig {
     doMove  :: Bool

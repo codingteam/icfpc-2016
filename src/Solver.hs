@@ -11,7 +11,7 @@ import Problem
 import Transform
 import Parser
 
-import Debug.Trace
+-- import Debug.Trace
 
 type TransformedPolyon = ([Fold], Polygon)
 type SolverState = [TransformedPolyon]
