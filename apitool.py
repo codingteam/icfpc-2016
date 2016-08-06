@@ -54,6 +54,12 @@ def submit_solution(id, fname):
     url = join(API, 'solution', 'submit')
     r = requests.post(url, headers=HEADERS, data=payload)
     print r.text
+    if r.status_code == 200:
+        j = r.json()
+        if j["ok"] == True and j["resemblance"] > 0.9:
+            with open("done.txt", "a") as f:
+                f.write(str(j["problem_id"]) + "\n")
+            print "marking as done"
 
 def usage():
     print "Available commands: hello; status; download; submit problem_id solution.txt"
