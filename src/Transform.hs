@@ -198,9 +198,13 @@ cutPolygon line polygon =
 
     toLeftPolygon :: Point -> State CutterState ()
     toLeftPolygon p =
-      modify $ \(l,r) -> (l ++ [p], r)
+      modify $ \(l,r) -> if p `elem` l
+                           then (l,r)
+                           else (l ++ [p], r)
 
     toRightPolygon :: Point -> State CutterState ()
     toRightPolygon p =
-      modify $ \(l,r) -> (l, r ++ [p])
+      modify $ \(l,r) -> if p `elem` r
+                           then (l,r)
+                           else (l, r ++ [p])
 

@@ -3,6 +3,7 @@ module Solution where
 
 import Data.List
 import Data.Ratio
+import Data.Maybe
 
 import Problem
 import Solver
@@ -22,23 +23,26 @@ formatNumber x = go (numerator x) (denominator x)
 formatPoint :: Point -> String
 formatPoint (x,y) = formatNumber x ++ "," ++ formatNumber y
 
+formatPolygon :: Polygon -> String
+formatPolygon poly = unwords $ map formatPoint poly
+
 allVertices :: [Polygon] -> [Point]
 allVertices polys = nub $ sort $ concat polys
 
 srcPart :: [Point] -> String
 srcPart points =
-  unlines (show (length points) : map formatPoint points) ++ "\n"
+  unlines (show (length points) : map formatPoint points)
 
 facetsPart :: [Polygon] -> [Point] -> String
 facetsPart polys points =
-    unlines (show (length polys) : map formatPoly polys) ++ "\n"
+    unlines (show (length polys) : map formatPoly polys)
   where
     formatPoly :: Polygon -> String
     formatPoly poly =
       unwords $ show (length poly) : map showVertex poly
     
     showVertex :: Point -> String
-    showVertex p = show (findIndex (==p) points)
+    showVertex p = show (fromJust $ findIndex (==p) points)
 
 -- find index of polygon in list and index of vertex in that polygon
 findVertex :: [Polygon] -> Point -> (Int, Int)
