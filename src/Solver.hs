@@ -62,19 +62,32 @@ foldPolygonLeft :: Segment -> TransformedPolyon -> [TransformedPolyon]
 foldPolygonLeft seg (ts, p) =
   let (p1,p2) = cutPolygon seg p
   in  if null p2
-        then [(FoldLeft seg: ts, {-flipPolygon seg-} p1)]
+        then [(FoldLeft seg: ts, flipPolygon seg p1)]
         else if null p1
              then [(FoldLeft seg: ts, p2)]
-             else [(FoldLeft seg: ts, {-flipPolygon seg-} p1), (FoldLeft seg: ts, p2)]
+             else [(FoldLeft seg: ts, flipPolygon seg p1), (FoldLeft seg: ts, p2)]
+
+foldPolygonRight :: Segment -> TransformedPolyon -> [TransformedPolyon]
+foldPolygonRight seg (ts, p) =
+  let (p1,p2) = cutPolygon seg p
+  in  if null p2
+        then [(FoldRight seg: ts, p1)]
+        else if null p1
+             then [(FoldLeft seg: ts, flipPolygon seg p2)]
+             else [(FoldLeft seg: ts, p1), (FoldLeft seg: ts, flipPolygon seg p2)]
 
 doFoldLeft :: Segment -> Solver ()
 doFoldLeft seg = do
   modify $ \polygons -> concatMap (foldPolygonLeft seg) polygons
 
-simpleSolve1 :: Solver ()
-simpleSolve1 = do
-  [(_, poly)] <- get
+doFoldRight :: Segment -> Solver ()
+doFoldRight seg = do
+  modify $ \polygons -> concatMap (foldPolygonRight seg) polygons
+
+simpleSolve1 :: Polygon -> Solver ()
+simpleSolve1 poly = do
   let edges = zip poly (tail poly) ++ [(last poly, head poly)]
   forM_ edges $ \edge -> 
+    -- doFoldRight (elongate edge)
     doFoldLeft (traceShowId $ elongate edge)
 
