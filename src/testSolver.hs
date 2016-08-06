@@ -32,7 +32,7 @@ drawSolution path = do
          let p = head (pSilhouette problem)
          let initState = [([], unitSquare)]
          let foldedPolys = execState (simpleSolve1 p) initState
-             unfoldedPolys = map unfoldPolygon foldedPolys
+             unfoldedPolys = map applyTransform foldedPolys
          let dgram = mconcat $ map drawPolygon $ map snd foldedPolys
          {-forM_ foldedPolys $ \(ts, p) -> do
            putStrLn (formatPolygon p)-}

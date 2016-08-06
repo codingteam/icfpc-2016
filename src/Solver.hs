@@ -64,10 +64,10 @@ foldPolygonLeft seg (ts, p) =
   in trace ("Fold Left: Cut <" ++ formatPolygon p ++ "> with <" ++ formatSegment seg ++ ">:\n\t<" ++ 
             formatPolygon p1 ++ ">\n\t<" ++ formatPolygon p2 ++ ">") $
       if null p2
-        then [(FoldLeft seg: ts, {-flipPolygon seg-} p1)]
+        then [(FoldLeft seg: ts, flipPolygon seg p1)]
         else if null p1
              then [(ts, p2)]
-             else [(FoldLeft seg: ts, {-flipPolygon seg-} p1), (ts, p2)]
+             else [(FoldLeft seg: ts, flipPolygon seg p1), (ts, p2)]
 
 foldPolygonRight :: Segment -> TransformedPolyon -> [TransformedPolyon]
 foldPolygonRight seg (ts, p) =
@@ -77,8 +77,8 @@ foldPolygonRight seg (ts, p) =
       if null p2
         then [(ts, p1)]
         else if null p1
-             then [(FoldRight seg: ts, {-flipPolygon seg-} p2)]
-             else [(ts, p1), (FoldRight seg: ts, {-flipPolygon seg-} p2)]
+             then [(FoldRight seg: ts, flipPolygon seg p2)]
+             else [(ts, p1), (FoldRight seg: ts, flipPolygon seg p2)]
 
 doFoldLeft :: Segment -> Solver ()
 doFoldLeft seg = do
@@ -93,6 +93,12 @@ doAutoFold ctr seg =
   case ctr `relativeTo` seg of
     OnLeft -> trace ("Fold Right around " ++ formatSegment seg) $ doFoldRight seg
     _ -> trace ("Fold Left around " ++ formatSegment seg) $ doFoldLeft seg
+
+removeSinglePoints :: Solver ()
+removeSinglePoints = do
+    modify (filter good)
+  where
+    good (_, poly) = length poly >= 3
 
 unfoldPolygon :: TransformedPolyon -> Polygon
 unfoldPolygon (transforms, p) = applyTransform (reverse transforms, p)
@@ -122,4 +128,5 @@ simpleSolve1 poly = do
     --doFoldRight (elongate edge)
     --doFoldLeft edge
     doAutoFold ctr (elongate edge)
+  removeSinglePoints
 

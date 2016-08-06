@@ -11,8 +11,9 @@ import Solver
 formatSolution :: [TransformedPolyon] -> String
 formatSolution tps =
   let polys = map snd tps
-      vertices = allVertices polys
-  in  srcPart vertices ++ facetsPart polys vertices ++ dstPart tps vertices
+      unfoldedPolys = map unfoldPolygon tps
+      vertices = allVertices unfoldedPolys
+  in  srcPart vertices ++ facetsPart unfoldedPolys vertices ++ dstPart unfoldedPolys polys vertices
 
 allVertices :: [Polygon] -> [Point]
 allVertices polys = nub $ sort $ concat polys
@@ -39,13 +40,12 @@ findVertex polys p =
       Just vertexIdx = findIndex (== p) (polys !! polyIdx)
   in  (polyIdx, vertexIdx)
 
-dstPart :: [TransformedPolyon] -> [Point] -> String
-dstPart tps points =
+dstPart :: [Polygon] -> [Polygon] -> [Point] -> String
+dstPart polys tps points =
     unlines $ map formatPoint $ map go points
   where
-    polys = map snd tps
     go vertex =
       let (polyIdx, vertexIdx) = findVertex polys vertex
-          transformedPoly = applyTransform (tps !! polyIdx)
+          transformedPoly = tps !! polyIdx
       in  transformedPoly !! vertexIdx
 
