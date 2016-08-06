@@ -33,7 +33,7 @@ drawSolution path = do
          let initState = [([], unitSquare)]
          let foldedPolys = execState (simpleSolve1 p) initState
              unfoldedPolys = map applyTransform foldedPolys
-         let dgram = mconcat $ map drawPolygon $ map snd foldedPolys
+         let dgram = mconcat $ map drawPolygon $ unfoldedPolys
          {-forM_ foldedPolys $ \(ts, p) -> do
            putStrLn (formatPolygon p)-}
          putStr $ formatSolution $ foldedPolys

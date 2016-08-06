@@ -11,7 +11,7 @@ import Solver
 formatSolution :: [TransformedPolyon] -> String
 formatSolution tps =
   let polys = map snd tps
-      unfoldedPolys = map unfoldPolygon tps
+      unfoldedPolys = map applyTransform tps
       vertices = allVertices unfoldedPolys
   in  srcPart vertices ++ facetsPart unfoldedPolys vertices ++ dstPart unfoldedPolys polys vertices
 

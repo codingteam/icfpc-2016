@@ -127,6 +127,6 @@ simpleSolve1 poly = do
   forM_ edges $ \edge -> 
     --doFoldRight (elongate edge)
     --doFoldLeft edge
-    doAutoFold ctr (elongate edge)
+    doAutoFold ctr edge
   removeSinglePoints
 
