@@ -52,6 +52,25 @@ executable testSolver
                      , unordered-containers
   default-language:    Haskell2010
 
+executable generator
+  main-is:             generator.hs
+  other-modules:       Draw
+                     , Parser
+                     , Printer
+                     , Problem
+                     , Solver
+                     , Transform
+                     , EdgeUnfoldSolver
+  build-depends:       base >=4.8 && <4.9
+                     , filepath
+                     , Glob
+                     , mtl
+                     , parsec
+                     , diagrams-lib
+                     , diagrams-svg
+                     , data-default
+  default-language:    Haskell2010
+
 executable unfoldingSolver
   main-is:             unfoldingSolver.hs
   other-modules:       Draw
