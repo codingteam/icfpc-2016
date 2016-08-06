@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import sys
-from os.path import join
+from os.path import join, exists
 from time import sleep
 import requests
 from ratelimit import rate_limited
@@ -38,7 +38,11 @@ def download_problems():
     status = get_status()
     for problem in status["problems"]:
         id = problem["problem_id"]
-        with open("problems/json/problem_{}.json".format(id), 'w') as f:
+        fname = "problems/json/problem_{}.json".format(id)
+        if exists(fname):
+            print "{}: file exists, do not download".format(id)
+            continue
+        with open(fname, 'w') as f:
             f.write(str(problem))
         hsh = problem["problem_spec_hash"]
         sleep(1)
