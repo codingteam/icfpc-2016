@@ -5,6 +5,8 @@ import Control.Arrow
 import Control.Monad
 import Control.Monad.State
 import Data.Default
+import Data.List
+import Data.Ratio
 
 import Problem
 
@@ -124,7 +126,15 @@ data Line = Line {
 } deriving (Show, Eq)
 
 toLine :: Segment -> Line
-toLine ((x1, y1), (x2, y2)) = Line (y1 - y2) (x2 - x1) (x1*y2 - x2*y1)
+toLine ((x1, y1), (x2, y2)) =
+  let a = y1 - y2
+      b = x2 - x1
+      c = x1*y2 - x2*y1
+
+      gn = foldl1' gcd $ map numerator [a, b, c]
+      gd = foldl1' gcd $ map denominator [a, b, c]
+      g = gn % gd
+  in  Line (a/g) (b/g) (c/g)
 
 x /. y = trace ("Y: " ++ show y) $ x / y
 
@@ -154,7 +164,7 @@ type CutterState = (Polygon, Polygon)
 cutPolygon :: Segment -> Polygon -> (Polygon, Polygon)
 cutPolygon _   [] = ([], [])
 cutPolygon line polygon =
-      if any (onLine line) edges -- one of polygon edges 
+      if any (onLine line) edges -- one of polygon edges
         then (polygon, [])
         else if all (\p -> p `relativeTo` line `elem` (OnLine, OnLeft)) polygon
                then (polygon, [])
@@ -178,7 +188,7 @@ cutPolygon line polygon =
           sideEnd   = end   `relativeTo` line
       case (sideStart, sideEnd) of
         (OnLeft, OnLeft) -> do
-            toLeftPolygon start 
+            toLeftPolygon start
             toLeftPolygon end
         (OnRight, OnRight) -> do
             toRightPolygon start
@@ -204,3 +214,45 @@ cutPolygon line polygon =
     toRightPolygon p =
       modify $ \(l,r) -> (l, r ++ [p])
 
+-- | Combines two skeletons into one. Assumes that both skeletons start and end
+-- at the same point, i.e. start point of @s1@ is the same as @s2@'s.
+mergeSkeletons :: Skeleton -> Skeleton -> Skeleton
+mergeSkeletons s1 s2 = simplify $ concat [m1, [l1], [f2], m2, [l2], [f1]]
+  where
+  (f1, m1, l1) = chop s1
+  (f2, m2, l2) = chop $ invert [] s2
+
+  chop :: Skeleton -> (Segment, [Segment], Segment)
+  chop (first:rest) =
+    let rest' = reverse rest
+        last = head rest'
+        middle = reverse $ tail rest'
+    in  (first, middle, last)
+
+  -- Inverses the order and direction of vectors comprising a skeleton
+  invert :: [Segment] -> Skeleton -> Skeleton
+  invert acc [] = acc
+  invert acc (p:segments) = invert ((rev p):acc) segments
+
+  rev :: Segment -> Segment
+  rev (x, y) = (y, x)
+
+  simplify :: Skeleton -> Skeleton
+  simplify input
+    | length input < 2 = input
+    | otherwise =
+        let (f, m, l) = chop input
+        in  case combine f l of
+              [x] -> x : go m
+              _   -> go input
+    where
+    go [] = []
+    go (x:y:rest) = concat $ [combine x y, simplify rest]
+
+  combine :: Segment -> Segment -> [Segment]
+  combine seg1@(s, _) seg2@(_, f) =
+    let line1 = toLine seg1
+        line2 = toLine seg2
+    in  if line1 == line2
+          then [(s, f)]
+          else [seg1, seg2]
