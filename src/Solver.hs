@@ -89,5 +89,5 @@ simpleSolve1 poly = do
   let edges = zip poly (tail poly) ++ [(last poly, head poly)]
   forM_ edges $ \edge -> 
     -- doFoldRight (elongate edge)
-    doFoldLeft (traceShowId $ elongate edge)
+    doFoldLeft edge
 

@@ -8,6 +8,8 @@ import Data.Default
 
 import Problem
 
+import Debug.Trace
+
 data ToUnitSquareConfig = ToUnitSquareConfig {
     doMove  :: Bool
   , doScale :: Bool
@@ -124,6 +126,8 @@ data Line = Line {
 toLine :: Segment -> Line
 toLine ((x1, y1), (x2, y2)) = Line (y1 - y2) (x2 - x1) (x1*y2 - x2*y1)
 
+x /. y = trace ("Y: " ++ show y) $ x / y
+
 -- | Calculate the point where lines defined by segments cross
 getCrossPoint :: Segment -> Segment -> Maybe Point
 getCrossPoint s1 s2 =
@@ -134,18 +138,15 @@ getCrossPoint s1 s2 =
   Line a1 b1 c1 = toLine s1
   Line a2 b2 c2 = toLine s2
 
-  areParallel = 0 == a1*b2 - a2*b1
+  delta = a1*b2 - a2*b1
 
-  x = if b1 == 0 && a1 /= 0
-        then negate $ c1 / a1
-        else if b2 == 0 && a2 /= 0
-          then negate $ c2 / a2
-          else (b1*c2 - b2*c1) / (b2*a1 - b1*a2)
-  y = if a1 == 0 && b1 /= 0
-        then negate $ c1 / b1
-        else if a2 == 0 && b2 /= 0
-          then negate $ c2 / b2
-          else negate $ (a2 * x + c2) / b2
+  areParallel = 0 == delta
+
+  deltaX = -c1*b2 + c2*b1
+  deltaY = -a1*c2 + a2*c1
+
+  x = deltaX / delta
+  y = deltaY / delta
 
 type CutterState = (Polygon, Polygon)
 
