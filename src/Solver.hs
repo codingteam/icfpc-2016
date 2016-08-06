@@ -62,10 +62,10 @@ foldPolygonLeft :: Segment -> TransformedPolyon -> [TransformedPolyon]
 foldPolygonLeft seg (ts, p) =
   let (p1,p2) = cutPolygon seg p
   in  if null p2
-        then [(FoldLeft seg: ts, flipPolygon seg p1)]
+        then [(FoldLeft seg: ts, {-flipPolygon seg-} p1)]
         else if null p1
              then [(FoldLeft seg: ts, p2)]
-             else [(FoldLeft seg: ts, flipPolygon seg p1), (FoldLeft seg: ts, p2)]
+             else [(FoldLeft seg: ts, {-flipPolygon seg-} p1), (FoldLeft seg: ts, p2)]
 
 foldPolygonRight :: Segment -> TransformedPolyon -> [TransformedPolyon]
 foldPolygonRight seg (ts, p) =
@@ -73,8 +73,8 @@ foldPolygonRight seg (ts, p) =
   in  if null p2
         then [(FoldRight seg: ts, p1)]
         else if null p1
-             then [(FoldLeft seg: ts, flipPolygon seg p2)]
-             else [(FoldLeft seg: ts, p1), (FoldLeft seg: ts, flipPolygon seg p2)]
+             then [(FoldLeft seg: ts, {-flipPolygon seg-} p2)]
+             else [(FoldLeft seg: ts, p1), (FoldLeft seg: ts, {-flipPolygon seg-} p2)]
 
 doFoldLeft :: Segment -> Solver ()
 doFoldLeft seg = do
@@ -83,6 +83,15 @@ doFoldLeft seg = do
 doFoldRight :: Segment -> Solver ()
 doFoldRight seg = do
   modify $ \polygons -> concatMap (foldPolygonRight seg) polygons
+
+unfoldPolygon :: TransformedPolyon -> Polygon
+unfoldPolygon (transforms, p) = go (reverse transforms) p
+  where
+    go [] p = p
+    go (t:ts) p = go ts $ undo t p
+
+    undo (FoldLeft seg) p = flipPolygon seg p
+    undo (FoldRight seg) p = flipPolygon seg p
 
 simpleSolve1 :: Polygon -> Solver ()
 simpleSolve1 poly = do

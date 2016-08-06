@@ -30,9 +30,10 @@ main = do
     Left err -> fail $ show err
     Right p -> do
       let initState = [([], unitSquare)]
-      let rs = execState (simpleSolve1 p) initState
-      let dgram = mconcat $ map drawPolygon $ map snd rs
-      forM_ rs $ \(ts, p) -> do
+      let foldedPolys = execState (simpleSolve1 p) initState
+          unfoldedPolys = map unfoldPolygon foldedPolys
+      let dgram = mconcat $ map drawPolygon $ map snd foldedPolys
+      forM_ foldedPolys $ \(ts, p) -> do
         -- print ts
         print p
       mainWith dgram
