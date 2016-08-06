@@ -255,9 +255,9 @@ mergeSkeletons s1 s2 = simplify $ concat [m1, [l1], [f2], m2, [l2], [f1]]
     go (x:y:rest) = concat $ [combine x y, simplify rest]
 
   combine :: Segment -> Segment -> [Segment]
-  combine seg1@(s, _) seg2@(_, f) =
+  combine seg1 seg2 =
     let line1 = toLine seg1
         line2 = toLine seg2
     in  if line1 == line2
-          then [(s, f)]
+          then [seg1]
           else [seg1, seg2]
