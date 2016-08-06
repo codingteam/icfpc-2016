@@ -29,4 +29,4 @@ drawProblem :: Problem -> Diagram B
 drawProblem (Problem polygons skeleton) =
   let dPolygons = foldr1 atop $ map drawPolygon $ reverse polygons
       dSegments = foldr1 atop $ map drawSegment skeleton
-  in  (dSegments # lc red) `atop` (dPolygons # fc grey)
+  in  (dSegments # lc red) `atop` (dPolygons # fc grey) `atop` (unitSquare # lc black)
