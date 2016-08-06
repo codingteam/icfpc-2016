@@ -3,18 +3,17 @@
 open Generator.Definitions
 open Generator.Serializer
 
-let size = 1I % 1I
-let zero = 0I % 1I
+let size = 1N
 let square =
-    [ (zero, zero)
-      (size, zero)
+    [ (0N, 0N)
+      (size, 0N)
       (size, size)
-      (zero, size) ]
+      (0N, size) ]
 let squareSilhouette =
-    [ ((zero, zero), (size, zero))
-      ((size, zero), (size, size))
-      ((size, size), (zero, size))
-      ((zero, size), (zero, zero)) ]
+    [ ((0N, 0N), (size, 0N))
+      ((size, 0N), (size, size))
+      ((size, size), (0N, size))
+      ((0N, size), (0N, 0N)) ]
 let initialProblem =
     { Silhouette = [ square ]
       Skeleton = squareSilhouette }

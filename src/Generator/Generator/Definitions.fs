@@ -1,9 +1,6 @@
 ﻿module Generator.Definitions
 
-type Number = bigint * bigint
-let (%) x y : Number = x, y
-
-type Point = Number * Number
+type Point = BigRational * BigRational
 type Polygon = Point list
 type Segment = Point * Point
 type Skeleton = Segment list
