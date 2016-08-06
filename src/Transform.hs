@@ -219,10 +219,10 @@ cutPolygon line polygon =
 -- | Combines two skeletons into one. Assumes that both skeletons start and end
 -- at the same point, i.e. start point of @s1@ is the same as @s2@'s.
 mergeSkeletons :: Skeleton -> Skeleton -> Skeleton
-mergeSkeletons s1 s2 = simplify $ concat [m1, [l1], [f2], m2, [l2], [f1]]
+mergeSkeletons s1 s2 = simplify $ concat [m1, [l1], s2', [f1]]
   where
   (f1, m1, l1) = chop s1
-  (f2, m2, l2) = chop $ invert [] s2
+  s2' = invert [] s2
 
   chop :: Skeleton -> (Segment, [Segment], Segment)
   chop x@(first:rest)
