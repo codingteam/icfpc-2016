@@ -10,6 +10,7 @@ import Diagrams.Prelude hiding (unitSquare)
 import Diagrams.Backend.SVG.CmdLine
 
 import Problem
+import Transform
 import Solver
 import Solution
 import ConvexHull
@@ -23,7 +24,8 @@ drawSolution path = do
       Problem [polygon] _ -> do 
          let polygon = head (pSilhouette problem)
              hull = convexHull polygon
-         runSimpleSolver hull drawSvg printSolution
+             simplified = simplify hull
+         runSimpleSolver simplified drawSvg printSolution (error "Simple solver failed")
       _ -> fail $ "Problem is not so simple"
   where
     drawSvg :: [Polygon] -> Diagram B

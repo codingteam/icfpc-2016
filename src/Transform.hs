@@ -4,6 +4,7 @@ module Transform where
 import Control.Arrow
 import Control.Monad
 import Control.Monad.State
+import Data.Ratio
 import Data.Default
 import Data.List
 import Data.Ratio
@@ -12,6 +13,7 @@ import Problem
 
 -- import Debug.Trace
 trace _ x = x
+traceShowId = id
 
 data ToUnitSquareConfig = ToUnitSquareConfig {
     doMove  :: Bool
@@ -84,6 +86,13 @@ edgeLength2 ((x1,y1), (x2,y2)) =
   where
     dx = x2-x1
     dy = y2-y1
+
+-- Simplify polygon by rounding all numbers
+simplify :: Polygon -> Polygon
+simplify poly = map go poly
+  where
+    go (x,y) = (rnd x, rnd y)
+    rnd x = x `approxRational` (1 % 1000000000000)
 
 -- | Flip point relative to segment
 flipPoint :: Segment -> Point -> Point
