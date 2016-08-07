@@ -87,7 +87,7 @@ def submit_all():
                 print "Submit " + fname
                 r = submit_solution(id, fname)
                 if not r:
-                    break
+                    print ">>>> ERROR!"
 
 def usage():
     print "Available commands: hello; status; download; submit problem_id solution.txt; submitall"
