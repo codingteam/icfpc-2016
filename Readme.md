@@ -79,9 +79,9 @@ Team
 
 Team members in randomized order:
 
-- Friedrich von Never [ForNeVeR](https://github.com/ForNeVeR)
+- Friedrich von Never: [ForNeVeR](https://github.com/ForNeVeR)
 - [grouzen](https://github.com/grouzen)
-- Ilya Portnov [portnov](https://github.com/portnov)
+- Ilya Portnov: [portnov](https://github.com/portnov)
 - [Minoru](https://github.com/Minoru)
 - [Hagane](https://github.com/Hagane)
 
