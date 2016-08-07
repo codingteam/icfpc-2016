@@ -54,19 +54,43 @@ def download_problems():
 @rate_limited(1)
 def submit_solution(id, fname):
     solution = open(fname).read()
+    if len(solution) > 4900:
+        print "{}: solution too large, skipping".format(id)
+        return True
     payload = {'problem_id': id, 'solution_spec': solution}
     url = join(API, 'solution', 'submit')
     r = requests.post(url, headers=HEADERS, data=payload)
     print r.text
     if r.status_code == 200:
         j = r.json()
-        if j["ok"] == True and j["resemblance"] > 0.9:
+        if j["ok"] == True and j["resemblance"] > 0.98:
             with open("done.txt", "a") as f:
                 f.write(str(j["problem_id"]) + "\n")
             print "marking as done"
+            return True
+    return False
+
+@rate_limited(1)
+def submit_all():
+    doneTxt = open('done.txt').readlines()
+    doneTxt = [s.strip() for s in doneTxt]
+    while True:
+        try:
+            id = raw_input()
+        except EOFError:
+            break
+        else:
+            if id in doneTxt:
+                print "{}: Already submited".format(id)
+            else:
+                fname = "solutions/problem_{}.txt".format(id)
+                print "Submit " + fname
+                r = submit_solution(id, fname)
+                if not r:
+                    break
 
 def usage():
-    print "Available commands: hello; status; download; submit problem_id solution.txt"
+    print "Available commands: hello; status; download; submit problem_id solution.txt; submitall"
     sys.exit(1)
 
 if __name__ == "__main__":
@@ -81,6 +105,8 @@ if __name__ == "__main__":
         download_problems()
     elif command == 'submit':
         submit_solution(sys.argv[2], sys.argv[3])
+    elif command == 'submitall':
+        submit_all()
     else:
         usage()
 
