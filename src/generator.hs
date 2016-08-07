@@ -15,7 +15,7 @@ import Solver
 fieldSize :: Number
 fieldSize = 1 / 1
 
-nOfCuts = 1
+nOfCuts = 2
 maxDenom = 2^16
 
 squarePolygon :: Polygon
