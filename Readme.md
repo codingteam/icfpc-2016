@@ -83,6 +83,18 @@ skeleton back into a square.
 $ stack exec -- unfoldingSolver problems/problem_10.txt
 ```
 
+### `deconstruct`
+
+A tool we wrote in an attempt to solve problem No.101 manually. It generates
+a bunch of SVG files where each vertex in skeleton is described separately.
+
+The idea is to mark these points on a paper crane, then unfold it and write
+a solution entry by hand.
+
+```console
+$ stack exec -- deconstruct ../problems/problem_101.txt
+```
+
 Team
 ----
 
