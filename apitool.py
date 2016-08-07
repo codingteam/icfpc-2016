@@ -54,7 +54,7 @@ def download_problems():
 @rate_limited(1)
 def submit_solution(id, fname):
     solution = open(fname).read()
-    if len(solution) > 4900:
+    if len(solution) > 4998:
         print "{}: solution too large, skipping".format(id)
         return True
     payload = {'problem_id': id, 'solution_spec': solution}
