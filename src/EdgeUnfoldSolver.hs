@@ -64,10 +64,13 @@ findFacets skeleton (startPt, endPt) = go graph startPt []
   graph = M.unionWith S.union graph1 graph2
 
   go edges start facet
-    | M.null edges = [reverse facet]
     | start == endPt =
         -- avoid returning the segment we were given
         if length facet > 1 then [reverse facet] else []
+    | M.null edges =
+        if snd (head facet) == endPt
+          then [facet]
+          else []
     | otherwise =
         let next = M.lookupDefault S.empty start edges
             edges' = M.delete start edges
