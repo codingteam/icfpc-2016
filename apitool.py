@@ -5,10 +5,12 @@ from os.path import join, exists, getsize
 from time import sleep
 import requests
 from ratelimit import rate_limited
+import re
 
 OUR_KEY = '155-9a3123798006a07e9a054657ba047c68'
 HEADERS = {'X-API-Key': OUR_KEY}
 API = 'http://2016sv.icfpcontest.org/api'
+number_re = re.compile("[0-9]+")
 
 @rate_limited(1)
 def hello():
@@ -88,16 +90,20 @@ def submit_all():
     ownTxt = [s.strip() for s in ownTxt]
     while True:
         try:
-            id = raw_input()
+            line = raw_input()
         except EOFError:
             break
         else:
+            if number_re.match(line):
+                id = line
+            else:
+                id = number_re.search(line).group(0)
+            fname = "solutions/problem_{}.txt".format(id)
             if id in doneTxt:
                 print "{}: Already submited".format(id)
             elif id in ownTxt:
                 print "{}: Own problem".format(id)
             else:
-                fname = "solutions/problem_{}.txt".format(id)
                 if exists(fname) and getsize(fname) > 4998:
                     print "Solution for problem {} too large, skipping.".format(id)
                 elif exists(fname):
@@ -105,6 +111,8 @@ def submit_all():
                     r = submit_solution(id, fname)
                     if not r:
                         print ">>>> ERROR!"
+                else:
+                    print "{}: file does not exist".format(fname)
 
 def usage():
     print "Available commands: hello; status; download; submit problem_id solution.txt; submitall"
