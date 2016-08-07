@@ -30,3 +30,6 @@ drawProblem (Problem polygons skeleton) =
   let dPolygons = foldr1 atop $ map drawPolygon $ reverse polygons
       dSegments = foldr1 atop $ map drawSegment skeleton
   in  (dSegments # lc red) `atop` (dPolygons # fc grey) `atop` (unitSquare # translate (r2 (0.5,0.5)) # lc black)
+
+drawPoint :: Problem.Point -> Diagram B
+drawPoint point = circle 0.01 & moveTo (mkPoint point)

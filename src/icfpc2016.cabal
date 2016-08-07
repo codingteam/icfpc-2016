@@ -116,3 +116,23 @@ executable solveAllSimple
                      , unordered-containers
                      , astar
   default-language:    Haskell2010
+
+executable deconstruct
+  main-is:             deconstruct.hs
+  other-modules:       Draw
+                     , Parser
+                     , Problem
+                     , Solver
+                     , Transform
+                     , EdgeUnfoldSolver
+  build-depends:       base >=4.8 && <4.9
+                     , filepath
+                     , Glob
+                     , mtl
+                     , parsec
+                     , diagrams-lib
+                     , diagrams-svg
+                     , data-default
+                     , unordered-containers
+                     , astar
+  default-language:    Haskell2010
