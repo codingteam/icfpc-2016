@@ -4,11 +4,16 @@ module Main where
 import Control.Monad
 import Control.Monad.State
 import System.FilePath
+import System.FilePath.Glob
 import System.Environment
+import System.Timeout
 
 import Problem
+import Parser
 import Solver
+import ConvexHull
 import Solution
+import Clipper
 
 worker :: [FilePath] -> FilePath -> FilePath -> Problem -> IO ()
 worker doneTxt dstDir inFile problem = do
@@ -17,15 +22,31 @@ worker doneTxt dstDir inFile problem = do
       then putStrLn $ basename ++ ": already done"
       else do 
            let outFile = dstDir </> basename
-           let polygon = head (pSilhouette problem)
-           let initState = [([], unitSquare)]
-           let (ok, foldedPolys) = runState (simpleSolve1 polygon) initState
-           if ok
+           if length (pSilhouette problem) == 1
              then do
-               putStrLn $ "Solved: " ++ basename
-               writeFile outFile $ formatSolution $ foldedPolys
-             else putStrLn $ basename ++ ": simple solver failed"
-
+                 let polygon = head (pSilhouette problem)
+                     hull = convexHull polygon
+                 let initState = [([], unitSquare)]
+                 let (ok, foldedPolys) = runState (simpleSolve1 hull) initState
+                 if ok
+                   then do
+                     putStrLn $ "Solved: " ++ basename
+                     writeFile outFile $ formatSolution $ foldedPolys
+                   else putStrLn $ basename ++ ": simple solver failed"
+              else do
+                 unitedPolys <- unionSilhouette (pSilhouette problem)
+                 if length unitedPolys == 1
+                   then do
+                     putStrLn "Not so simple problem, using Clipper"
+                     let hull =  convexHull (head unitedPolys)
+                     let initState = [([], unitSquare)]
+                     let (ok, foldedPolys) = runState (simpleSolve1 hull) initState
+                     if ok
+                       then do
+                         putStrLn $ "Solved by Clipper: " ++ basename
+                         writeFile outFile $ formatSolution $ foldedPolys
+                       else putStrLn $ basename ++ ": simple solver failed"
+                   else putStrLn "Can't even use Clipper properly"
 main :: IO ()
 main = do
   args <- getArgs
@@ -33,4 +54,9 @@ main = do
   let [donePath, srcDir, dstDir] = args
   done <- lines `fmap` readFile donePath
   let doneTxt = map (\n -> "problem_" ++ n ++ ".txt") done
-  findSimpleProblems srcDir (worker doneTxt dstDir)
+  paths <- glob (srcDir </> "*.txt")
+  forM_ paths $ \path -> do
+    problem <- parseProblem path
+    putStrLn $ takeFileName path
+    timeout (10 * 1000 * 1000) $
+        worker doneTxt dstDir path problem

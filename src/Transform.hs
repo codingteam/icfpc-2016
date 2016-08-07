@@ -8,7 +8,9 @@ import Data.Default
 
 import Problem
 
-import Debug.Trace
+-- import Debug.Trace
+trace _ x = x
+traceShowId = id
 
 data ToUnitSquareConfig = ToUnitSquareConfig {
     doMove  :: Bool

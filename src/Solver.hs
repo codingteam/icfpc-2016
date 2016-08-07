@@ -6,12 +6,13 @@ import Control.Monad.State
 import Data.List
 import System.FilePath
 import System.FilePath.Glob
+import System.IO
 
 import Problem
 import Transform
 import Parser
 
-import Debug.Trace
+-- import Debug.Trace
 
 type TransformedPolyon = ([Fold], Polygon)
 type SolverState = [TransformedPolyon]
@@ -236,8 +237,12 @@ simpleSolve1 target = do
   let edges = zip target (tail target) ++ [(last target, head target)]
       ctr = center target
   repeatUntil (isEverythingInside target) $ do
-      forM_ edges $ \edge -> 
-        doAutoFold ctr (elongate edge)
+      forM_ (zip [0..] edges) $ \(i, edge) -> 
+        when (even i) $
+          doAutoFold ctr (elongate edge)
+      forM_ (zip [0..] edges) $ \(i, edge) -> 
+        when (odd i) $
+          doAutoFold ctr (elongate edge)
   removeSinglePoints
   return True
 

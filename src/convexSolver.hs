@@ -16,6 +16,12 @@ import ConvexHull
 import Parser
 import Draw
 
+simplify :: Polygon -> Polygon
+simplify poly = map go poly
+  where
+    go (x,y) = (rnd x, rnd y)
+    rnd x = x `approxRational` (1 % 1000000000000)
+
 drawSolution :: FilePath -> IO (Diagram B)
 drawSolution path = do
     problem <- parseProblem path
@@ -23,7 +29,8 @@ drawSolution path = do
       Problem [polygon] _ -> do 
          let polygon = head (pSilhouette problem)
              hull = convexHull polygon
-         runSimpleSolver hull drawSvg printSolution
+             simplified = simplify hull
+         runSimpleSolver simplified drawSvg printSolution (error "Simple solver failed")
       _ -> fail $ "Problem is not so simple"
   where
     drawSvg :: [Polygon] -> Diagram B
