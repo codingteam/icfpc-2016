@@ -94,3 +94,25 @@ executable unfoldingSolver
                      , unordered-containers
                      , astar
   default-language:    Haskell2010
+
+executable solveAllSimple
+  main-is:             solveAllSimple.hs
+  other-modules:       Draw
+                     , Parser
+                     , Problem
+                     , Solver
+                     , Transform
+                     , EdgeUnfoldSolver
+                     , ConvexHull
+                     , Solution
+  build-depends:       base >=4.8 && <4.9
+                     , filepath
+                     , Glob
+                     , mtl
+                     , parsec
+                     , diagrams-lib
+                     , diagrams-svg
+                     , data-default
+                     , unordered-containers
+                     , astar
+  default-language:    Haskell2010
