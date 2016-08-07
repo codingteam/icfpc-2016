@@ -8,8 +8,3 @@ src/visualize
 src/*.svg
 /src/.stack-work/
 .idea/
-
-bin/
-obj/
-packages/
-.vs/
