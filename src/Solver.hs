@@ -39,13 +39,14 @@ isSimpleProblem :: Problem -> Bool
 isSimpleProblem (Problem [polygon] _) = isConvex polygon
 isSimpleProblem _ = False
 
-findSimpleProblems :: FilePath -> IO ()
-findSimpleProblems dir = do
+findSimpleProblems :: FilePath -> (FilePath -> Problem -> IO ()) -> IO ()
+findSimpleProblems dir worker = do
   paths <- glob (dir </> "*.txt")
   forM_ paths $ \path -> do
     problem <- parseProblem path
-    when (isSimpleProblem problem) $
+    when (isSimpleProblem problem) $ do
       putStrLn $ takeFileName path
+      worker path problem
 
 elongate :: Segment -> Segment
 elongate ((x1,y1), (x2,y2)) = 

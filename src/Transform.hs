@@ -176,9 +176,9 @@ cutPolygon line polygon =
         then if any (\p -> p `relativeTo` line == OnLeft) polygon
              then (polygon, [])
              else ([], polygon)
-        else if all (\p -> p `relativeTo` line `elem` (OnLine, OnLeft)) polygon
+        else if all (\p -> p `relativeTo` line `elem` [OnLine, OnLeft]) polygon
                then (polygon, [])
-               else if all (\p -> p `relativeTo` line `elem` (OnLine, OnRight)) polygon
+               else if all (\p -> p `relativeTo` line `elem` [OnLine, OnRight]) polygon
                     then ([], polygon)
                     else baseCase
   where
