@@ -20,7 +20,7 @@ main = do
   forM_ inFiles $ \inFile -> do
     let basename = takeFileName inFile
     if basename `elem` doneTxt
-      then putStrLn $ inFile ++ ": already done"
+      then return ()
       else do
           let outFile = dstDir </> basename
           runTrivialSolver inFile outFile

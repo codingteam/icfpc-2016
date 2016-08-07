@@ -2,6 +2,7 @@
 module Trivial where
 
 import Control.Monad
+import System.FilePath
 
 import Problem
 import Parser
@@ -33,7 +34,7 @@ runTrivialSolver :: FilePath -> FilePath -> IO ()
 runTrivialSolver inFile outFile = do
   problem <- parseProblem inFile
   when (isTrivialProblem problem) $ do
-    putStrLn $ "Trivial: " ++ inFile ++ " -> " ++ outFile
+    putStrLn (takeFileName inFile)
     let result = trivialSolver problem
     writeFile outFile result
   
