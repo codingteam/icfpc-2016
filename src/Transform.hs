@@ -107,6 +107,18 @@ flipSegment seg (p1, p2) = (flipPoint seg p1, flipPoint seg p2)
 flipSkeleton :: Segment -> Skeleton -> Skeleton
 flipSkeleton seg segments = map (flipSegment seg) segments
 
+translatePoint :: Point -> Point -> Point
+translatePoint (vx,vy) (x,y) = (vx+x, vy+y)
+
+translateSegment :: Point -> Segment -> Segment
+translateSegment v (a,b) = (translatePoint v a, translatePoint v b)
+
+translatePolygon :: Point -> Polygon -> Polygon
+translatePolygon v poly = map (translatePoint v) poly
+
+translateSilhouette :: Point -> Silhouette -> Silhouette
+translateSilhouette v sil = map (translatePolygon v) sil
+
 -- | Possible relative positions of line and point
 data RelativePos = OnLeft | OnLine | OnRight
   deriving (Show, Eq)

@@ -16,7 +16,8 @@ import Debug.Trace
 type TransformedPolyon = ([Fold], Polygon)
 type SolverState = [TransformedPolyon]
 data Fold = 
-    FoldLeft Segment
+    Translate Point -- ^ Map (0,0) to that Point
+  | FoldLeft Segment
   | FoldRight Segment
   deriving (Eq, Show)
 
@@ -98,6 +99,42 @@ doAutoFold ctr seg =
     OnLeft -> trace ("Fold Right around " ++ formatSegment seg) $ doFoldRight seg
     _ -> trace ("Fold Left around " ++ formatSegment seg) $ doFoldLeft seg
 
+doTranslate :: Point -> Solver ()
+doTranslate v =
+    modify $ \polygons -> map (translatePolygonT v) polygons
+  where
+    translatePolygonT :: Point -> TransformedPolyon -> TransformedPolyon
+    translatePolygonT v (ts, p) =
+      (Translate v: ts,
+        trace ("Translate <" ++ formatPolygon p ++ "> by <" ++ formatPoint v ++ ">") translatePolygon v p)
+
+-- | Check if polygon fits in unit square
+-- Fail if not.
+checkFitsXY :: Polygon -> Solver ()
+checkFitsXY poly = do
+  when (not $ isInUnitSquare poly) $
+    fail $ "Polygon does not fit in unit square"
+
+-- | Check if size of polygon by X,Y is <= 1.
+-- Fail if not.
+checkSizeXY :: Polygon -> Solver ()
+checkSizeXY poly = do
+  let xs = map fst poly
+      ys = map snd poly
+      maxx = maximum xs
+      maxy = maximum ys
+      minx = minimum xs
+      miny = minimum ys
+  when (maxx - minx > 1 || maxy - miny > 1) $
+    fail "Polygon size by X or y is > 1, we need to rotate it first"
+
+translateToOrigin :: Polygon -> Solver ()
+translateToOrigin target = do
+  checkSizeXY target
+  let minx = minimum (map fst target)
+      miny = minimum (map snd target)
+  doTranslate (minx, miny)
+
 removeSinglePoints :: Solver ()
 removeSinglePoints = do
     modify (filter good)
@@ -105,7 +142,14 @@ removeSinglePoints = do
     good (_, poly) = length poly >= 3
 
 unfoldPolygon :: TransformedPolyon -> Polygon
-unfoldPolygon (transforms, p) = applyTransform (reverse transforms, p)
+unfoldPolygon (transforms, p) = go (reverse transforms) p
+  where
+    go [] p = p
+    go (t:ts) p = go ts $ undo t p
+
+    undo (FoldLeft seg) p = flipPolygon seg p
+    undo (FoldRight seg) p = flipPolygon seg p
+    undo (Translate (vx,vy)) p = translatePolygon (-vx, -vy) p
 
 applyTransform :: TransformedPolyon -> Polygon
 applyTransform (transforms, p) = go transforms p
@@ -115,6 +159,7 @@ applyTransform (transforms, p) = go transforms p
 
     apply (FoldLeft seg) p = flipPolygon seg p
     apply (FoldRight seg) p = flipPolygon seg p
+    apply (Translate (vx,vy)) p = translatePolygon (-vx, -vy) p
 
 center :: Polygon -> Point
 center poly = 
@@ -126,6 +171,8 @@ center poly =
 
 simpleSolve1 :: Polygon -> Solver ()
 simpleSolve1 poly = do
+  translateToOrigin poly
+  -- checkFitsXY poly
   let edges = zip poly (tail poly) ++ [(last poly, head poly)]
       ctr = center poly
   forM_ edges $ \edge -> 
