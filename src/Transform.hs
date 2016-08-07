@@ -92,7 +92,7 @@ simplify :: Polygon -> Polygon
 simplify poly = map go poly
   where
     go (x,y) = (rnd x, rnd y)
-    rnd x = x `approxRational` (1 % 1000000000000)
+    rnd x = x `approxRational` (1 % 10000000000)
 
 -- | Flip point relative to segment
 flipPoint :: Segment -> Point -> Point
