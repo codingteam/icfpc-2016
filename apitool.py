@@ -53,6 +53,9 @@ def download_problems():
 
 @rate_limited(1)
 def submit_solution(id, fname):
+    if not exists(fname):
+        print "{}: file does not exist".format(fname)
+        return False
     solution = open(fname).read()
     if len(solution) > 4998:
         print "{}: solution too large, skipping".format(id)
@@ -95,9 +98,9 @@ def submit_all():
                 print "{}: Own problem".format(id)
             else:
                 fname = "solutions/problem_{}.txt".format(id)
-                if getsize(fname) > 4998:
+                if exists(fname) and getsize(fname) > 4998:
                     print "Solution for problem {} too large, skipping.".format(id)
-                else:
+                elif exists(fname):
                     print "Submit " + fname
                     r = submit_solution(id, fname)
                     if not r:
