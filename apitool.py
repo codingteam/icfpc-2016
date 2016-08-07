@@ -54,15 +54,20 @@ def download_problems():
 @rate_limited(1)
 def submit_solution(id, fname):
     solution = open(fname).read()
-    if len(solution) > 4900:
+    if len(solution) > 4998:
         print "{}: solution too large, skipping".format(id)
         return True
     payload = {'problem_id': id, 'solution_spec': solution}
     url = join(API, 'solution', 'submit')
     r = requests.post(url, headers=HEADERS, data=payload)
     print r.text
+    j = r.json()
+    if j["ok"] == False and "solution to an own problem" in j["error"]:
+        with open("own.txt", "a") as f:
+            f.write(id + "\n")
+        print "marking as own"
+        return False
     if r.status_code == 200:
-        j = r.json()
         if j["ok"] == True and j["resemblance"] > 0.98:
             with open("done.txt", "a") as f:
                 f.write(str(j["problem_id"]) + "\n")
@@ -74,6 +79,8 @@ def submit_solution(id, fname):
 def submit_all():
     doneTxt = open('done.txt').readlines()
     doneTxt = [s.strip() for s in doneTxt]
+    ownTxt = open('own.txt').readlines()
+    ownTxt = [s.strip() for s in ownTxt]
     while True:
         try:
             id = raw_input()
@@ -82,12 +89,14 @@ def submit_all():
         else:
             if id in doneTxt:
                 print "{}: Already submited".format(id)
+            elif id in ownTxt:
+                print "{}: Own problem".format(id)
             else:
                 fname = "solutions/problem_{}.txt".format(id)
                 print "Submit " + fname
                 r = submit_solution(id, fname)
                 if not r:
-                    break
+                    print ">>>> ERROR!"
 
 def usage():
     print "Available commands: hello; status; download; submit problem_id solution.txt; submitall"

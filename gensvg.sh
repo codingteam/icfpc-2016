@@ -2,5 +2,8 @@
 cd src
 for input in ../problems/*.txt; do
     filename=`basename "$input"`
-    ./visualize -- "$input" -o "../svg/${filename%%txt}svg" -w 500
+    svg=${filename%%txt}svg
+    if [ ! -e ../svg/$svg ]
+    then ./visualize -- "$input" -o "../svg/$svg" -w 500
+    fi
 done
