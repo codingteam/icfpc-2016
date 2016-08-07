@@ -140,14 +140,11 @@ isEverythingInside target = do
     tps <- get
     let silhouette = concatMap snd tps
         edges = zip target (tail target) ++ [(last target, head target)]
-    trace ("Check if [" ++ unwords (map formatPoint silhouette) ++"] is inside <" ++ formatPolygon target ++ ">") $ return ()
     return $ all (atOneSide silhouette) edges
   where
     atOneSide silhouette edge =
-        and (traceX "left" edge $ map (\p -> p `relativeTo` edge `elem` [OnLine, OnLeft]) silhouette) ||
-        and (traceX "right" edge $ map (\p -> p `relativeTo` edge `elem` [OnLine, OnRight]) silhouette)
-
-    traceX side edge res = trace ("  check <" ++ formatSegment edge ++ ">: " ++ side ++ ": " ++ show res) res
+        all (\p -> p `relativeTo` edge `elem` [OnLine, OnLeft]) silhouette ||
+        all (\p -> p `relativeTo` edge `elem` [OnLine, OnRight]) silhouette
 
 removeSinglePoints :: Solver ()
 removeSinglePoints = do
