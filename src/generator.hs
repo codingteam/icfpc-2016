@@ -15,8 +15,8 @@ import Solver
 fieldSize :: Number
 fieldSize = 1 / 1
 
-nOfCuts = 2
-maxDenom = 2^16
+nOfCuts = 5
+maxDenom = 2^8
 
 squarePolygon :: Polygon
 squarePolygon = [(0, 0), (fieldSize, 0), (fieldSize, fieldSize), (0, fieldSize)]
