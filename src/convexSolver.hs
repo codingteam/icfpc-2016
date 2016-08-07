@@ -10,17 +10,12 @@ import Diagrams.Prelude hiding (unitSquare)
 import Diagrams.Backend.SVG.CmdLine
 
 import Problem
+import Transform
 import Solver
 import Solution
 import ConvexHull
 import Parser
 import Draw
-
-simplify :: Polygon -> Polygon
-simplify poly = map go poly
-  where
-    go (x,y) = (rnd x, rnd y)
-    rnd x = x `approxRational` (1 % 1000000000000)
 
 drawSolution :: FilePath -> IO (Diagram B)
 drawSolution path = do
