@@ -106,6 +106,8 @@ def submit_all():
             else:
                 if exists(fname) and getsize(fname) > 4998:
                     print "Solution for problem {} too large, skipping.".format(id)
+                if exists(fname) and getsize(fname) < 46:
+                    print "Solution for problem {} too small, skipping.".format(id)
                 elif exists(fname):
                     print "Submit " + fname
                     r = submit_solution(id, fname)
