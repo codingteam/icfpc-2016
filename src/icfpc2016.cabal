@@ -60,6 +60,7 @@ executable generator
                      , Parser
                      , Printer
                      , Problem
+                     , Solution
                      , Solver
                      , Transform
                      , EdgeUnfoldSolver

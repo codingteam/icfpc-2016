@@ -110,6 +110,18 @@ flipSegment seg (p1, p2) = (flipPoint seg p1, flipPoint seg p2)
 flipSkeleton :: Segment -> Skeleton -> Skeleton
 flipSkeleton seg segments = map (flipSegment seg) segments
 
+translatePoint :: Point -> Point -> Point
+translatePoint (vx,vy) (x,y) = (vx+x, vy+y)
+
+translateSegment :: Point -> Segment -> Segment
+translateSegment v (a,b) = (translatePoint v a, translatePoint v b)
+
+translatePolygon :: Point -> Polygon -> Polygon
+translatePolygon v poly = map (translatePoint v) poly
+
+translateSilhouette :: Point -> Silhouette -> Silhouette
+translateSilhouette v sil = map (translatePolygon v) sil
+
 -- | Possible relative positions of line and point
 data RelativePos = OnLeft | OnLine | OnRight
   deriving (Show, Eq)
@@ -177,9 +189,9 @@ cutPolygon line polygon =
         then if any (\p -> p `relativeTo` line == OnLeft) polygon
              then (polygon, [])
              else ([], polygon)
-        else if all (\p -> p `relativeTo` line `elem` (OnLine, OnLeft)) polygon
+        else if all (\p -> p `relativeTo` line `elem` [OnLine, OnLeft]) polygon
                then (polygon, [])
-               else if all (\p -> p `relativeTo` line `elem` (OnLine, OnRight)) polygon
+               else if all (\p -> p `relativeTo` line `elem` [OnLine, OnRight]) polygon
                     then ([], polygon)
                     else baseCase
   where
@@ -212,7 +224,7 @@ cutPolygon line polygon =
             toRightPolygon end
         (OnLine, OnRight) -> do
             toRightPolygon start
-            toLeftPolygon end 
+            toLeftPolygon start 
             toRightPolygon end
         (OnLeft, OnLeft) -> do
             toLeftPolygon start

@@ -1,3 +1,4 @@
+{-# LANGUAGE NoMonomorphismRestriction #-}
 
 module Main where
 
@@ -15,32 +16,22 @@ import Solution
 import Parser
 import Draw
 
-solver :: Solver ()
-solver = do
-  doFoldLeft ((1%2, 0), (1%2, 1))
-  doFoldLeft ((0, 1%2), (1, 1%2))
-
-unitSquare :: Polygon
-unitSquare = 
-  [(0,0), (1,0), (1,1), (0,1)]
-
 drawSolution :: FilePath -> IO (Diagram B)
 drawSolution path = do
-  problem <- parseProblem path
-  if isSimpleProblem problem
-    then do
-         let p = head (pSilhouette problem)
-         let initState = [([], unitSquare)]
-         let foldedPolys = execState (simpleSolve1 p) initState
-             unfoldedPolys = map unfoldPolygon foldedPolys
-         let dgram = mconcat $ map drawPolygon $ map snd foldedPolys
-         {-forM_ foldedPolys $ \(ts, p) -> do
-           putStrLn (formatPolygon p)-}
+    problem <- parseProblem path
+    if isSimpleProblem problem
+      then do
+         let polygon = head (pSilhouette problem)
+         runSimpleSolver polygon drawSvg printSolution
+      else fail $ "Problem is not so simple"
+  where
+    drawSvg :: [Polygon] -> Diagram B
+    drawSvg unfoldedPolys = do
+         mconcat $ map drawPolygon $ unfoldedPolys
+
+    printSolution foldedPolys =
          putStr $ formatSolution $ foldedPolys
-         return dgram
-    else fail $ "Problem is not so simple"
 
 main :: IO ()
 main = do
   mainWith drawSolution
-

@@ -32,3 +32,9 @@ formatPolygon poly = unwords $ map formatPoint poly
 formatSegment :: Segment -> String
 formatSegment (a,b) = formatPoint a ++ " -- " ++ formatPoint b
 
+isInUnitSquare :: Polygon -> Bool
+isInUnitSquare poly = all good poly 
+  where
+    good (x,y) =
+      x >= 0 && x <= 1 &&
+      y >= 0 && y <= 1
