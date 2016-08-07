@@ -6,13 +6,7 @@ import System.FilePath
 
 import Problem
 import Parser
-
-edgeLength2 :: Segment -> Number
-edgeLength2 ((x1,y1), (x2,y2)) =
-    dx*dx + dy*dy
-  where
-    dx = x2-x1
-    dy = y2-y1
+import Transform (edgeLength2)
 
 isUnitSquare :: Polygon -> Bool
 isUnitSquare poly =

@@ -75,6 +75,13 @@ traceResult :: String -> Polygon -> Polygon
 traceResult msg x =
   trace (msg ++ ": " ++ formatPolygon x) x
 
+edgeLength2 :: Segment -> Number
+edgeLength2 ((x1,y1), (x2,y2)) =
+    dx*dx + dy*dy
+  where
+    dx = x2-x1
+    dy = y2-y1
+
 -- | Flip point relative to segment
 flipPoint :: Segment -> Point -> Point
 flipPoint ((sx1,sy1), (sx2,sy2)) (x,y) =
@@ -118,6 +125,35 @@ translatePolygon v poly = map (translatePoint v) poly
 
 translateSilhouette :: Point -> Silhouette -> Silhouette
 translateSilhouette v sil = map (translatePolygon v) sil
+
+-- Rotation matrix has form of
+-- /   dx   -dy  \
+-- |  ----  ---- |
+-- |   D     D   |
+-- |             |
+-- |   dy    dx  |
+-- |  ----  ---- |
+-- \   D     D   /
+--
+-- where D = sqrt(dx^2 + dy^2).
+-- So we can store only D, dx and dy.
+type Rotation = (Number, Number, Number)
+
+-- We are going to rotate everything around (0,0)
+rotatePoint :: Rotation -> Point -> Point
+rotatePoint (delta,dx,dy) (x,y) =
+  let x' = (x*dx - y*dy) / delta
+      y' = (x*dy + y*dx) / delta
+  in  (x', y')
+
+rotatePolygon :: Rotation -> Polygon -> Polygon
+rotatePolygon rot poly = map (rotatePoint rot) poly
+
+unrotatePolygon :: Rotation -> Polygon -> Polygon
+unrotatePolygon (delta,dx,dy) poly = map (rotatePoint (delta,dx,-dy)) poly
+
+rotateSilhouette :: Rotation -> Silhouette -> Silhouette
+rotateSilhouette rot sil = map (rotatePolygon rot) sil
 
 -- | Possible relative positions of line and point
 data RelativePos = OnLeft | OnLine | OnRight

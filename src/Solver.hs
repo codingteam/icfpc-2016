@@ -17,6 +17,7 @@ type TransformedPolyon = ([Fold], Polygon)
 type SolverState = [TransformedPolyon]
 data Fold = 
     Translate Point -- ^ Map (0,0) to that Point
+  | Rotate Rotation -- ^ Rotate around (0,0)
   | FoldLeft Segment
   | FoldRight Segment
   deriving (Eq, Show)
@@ -109,6 +110,16 @@ doTranslate v =
       (Translate v: ts,
         trace ("Translate <" ++ formatPolygon p ++ "> by <" ++ formatPoint v ++ ">") translatePolygon v p)
 
+doRotate :: Rotation -> Solver ()
+doRotate rot =
+    modify $ \polygons -> map (rotatePolygonT rot) polygons
+  where
+    rotatePolygonT :: Rotation -> TransformedPolyon -> TransformedPolyon
+    rotatePolygonT rot (ts, p) =
+      (Rotate rot: ts,
+        traceResult ("Rotate <" ++ formatPolygon p ++ "> by " ++ show rot) $
+          rotatePolygon rot p)
+
 -- | Check if polygon fits in unit square
 checkFitsXY :: Polygon -> Solver Bool
 checkFitsXY poly = do
@@ -118,7 +129,7 @@ checkFitsXY poly = do
   return ok
 
 -- | Check if size of polygon by X,Y is <= 1.
-checkSizeXY :: Polygon -> Solver Bool
+checkSizeXY :: Monad m => Polygon -> m Bool
 checkSizeXY poly = do
   let xs = map fst poly
       ys = map snd poly
@@ -126,16 +137,35 @@ checkSizeXY poly = do
       maxy = maximum ys
       minx = minimum xs
       miny = minimum ys
-  let bad = maxx - minx > 1 || maxy - miny > 1
+      dx = maxx-minx
+      dy = maxy-miny
+  let bad = dx > 1 || dy > 1
   when (bad) $
     trace "Polygon size by X or y is > 1, we need to rotate it first" $ return ()
-  return $ not bad
+  return $ trace ("Polygon size: " ++ formatPoint (dx,dy)) $ not bad
 
 translateToOrigin :: Polygon -> Solver ()
 translateToOrigin target = do
   let minx = minimum (map fst target)
       miny = minimum (map snd target)
   doTranslate (minx, miny)
+
+guessRotation :: Polygon -> Maybe (Point, Rotation)
+guessRotation target = do
+    let edges = zip target (tail target) ++ [(last target, head target)]
+    guess@(origin,rot) <-  msum $ map check edges
+    ok <- checkSizeXY $ unrotatePolygon rot target
+    if ok
+      then return guess
+      else Nothing
+  where
+    check edge@((x1,y1), (x2,y2)) =
+      if edgeLength2 edge == 1
+        then let dx = x2-x1
+                 dy = y2-y1
+                 delta = 1
+             in traceShowId $  Just ((x1,y1), (delta, dx, dy))
+        else trace "not found" Nothing
 
 isEverythingInside :: Polygon -> Solver Bool
 isEverythingInside target = do
@@ -154,6 +184,7 @@ removeSinglePoints = do
   where
     good (_, poly) = length poly >= 3
 
+-- not used currently
 unfoldPolygon :: TransformedPolyon -> Polygon
 unfoldPolygon (transforms, p) = go (reverse transforms) p
   where
@@ -173,6 +204,7 @@ applyTransform (transforms, p) = go transforms p
     apply (FoldLeft seg) p = flipPolygon seg p
     apply (FoldRight seg) p = flipPolygon seg p
     apply (Translate (vx,vy)) p = translatePolygon (-vx, -vy) p
+    apply (Rotate (delta,dx,dy)) p = rotatePolygon (delta,dx,-dy) p
 
 center :: Polygon -> Point
 center poly = 
@@ -192,20 +224,29 @@ repeatUntil check action = do
 
 simpleSolve1 :: Polygon -> Solver Bool
 simpleSolve1 target = do
-  sizeOk <- checkSizeXY target
-  when sizeOk $ do
-      translateToOrigin target
-      -- checkFitsXY target
-      let edges = zip target (tail target) ++ [(last target, head target)]
-          ctr = center target
-      repeatUntil (isEverythingInside target) $ do
-          forM_ edges $ \edge -> 
-            doAutoFold ctr (elongate edge)
-      removeSinglePoints
-  return sizeOk
+  case guessRotation target of
+    Nothing -> do
+        translateToOrigin target
+    Just (origin, rot) -> do
+        doRotate $! trace "rotation found" rot
+        doTranslate origin
+  -- checkFitsXY target
+  tps <- get
+  --let silhouette = concatMap snd tps
+  let edges = zip target (tail target) ++ [(last target, head target)]
+      ctr = center target
+  repeatUntil (isEverythingInside target) $ do
+      forM_ edges $ \edge -> 
+        doAutoFold ctr (elongate edge)
+  removeSinglePoints
+  return True
 
-runSimpleSolver :: Polygon -> (Silhouette -> a) -> ([TransformedPolyon] -> IO b) -> IO a
-runSimpleSolver polygon withUnfolded withFolded = do
+runSimpleSolver :: Polygon
+                -> (Silhouette -> a)
+                -> ([TransformedPolyon] -> IO b)
+                -> a
+                -> IO a
+runSimpleSolver polygon withUnfolded withFolded onFail = do
          let initState = [([], unitSquare)]
          let (ok, foldedPolys) = runState (simpleSolve1 polygon) initState
          if ok
@@ -214,5 +255,5 @@ runSimpleSolver polygon withUnfolded withFolded = do
              withFolded foldedPolys
              return $ withUnfolded unfoldedPolys
            else do
-            fail "Simple solver failed."
+            return onFail
 
