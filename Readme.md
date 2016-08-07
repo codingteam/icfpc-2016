@@ -74,6 +74,15 @@ Solves simple tasks (only convex polygons).
 $ solveAllTrivial done.txt problems/ solutions/
 ```
 
+### `unfoldingSolver`
+
+An unfinished prototype where we wanted to find crease patterns by unfolding the
+skeleton back into a square.
+
+```console
+$ stack exec -- unfoldingSolver problems/problem_10.txt
+```
+
 Team
 ----
 
