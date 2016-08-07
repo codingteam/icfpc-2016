@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import sys
-from os.path import join, exists
+from os.path import join, exists, getsize
 from time import sleep
 import requests
 from ratelimit import rate_limited
@@ -68,11 +68,13 @@ def submit_solution(id, fname):
         print "marking as own"
         return False
     if r.status_code == 200:
-        if j["ok"] == True and j["resemblance"] > 0.98:
+        if j["ok"] == True:
+            print "marking as done"
             with open("done.txt", "a") as f:
                 f.write(str(j["problem_id"]) + "\n")
-            print "marking as done"
-            return True
+            with open("approximate.txt", "a") as f:
+                f.write("{}\t{}\n".format(j["problem_id"], j["resemblance"]))
+        return True
     return False
 
 @rate_limited(1)
@@ -93,10 +95,13 @@ def submit_all():
                 print "{}: Own problem".format(id)
             else:
                 fname = "solutions/problem_{}.txt".format(id)
-                print "Submit " + fname
-                r = submit_solution(id, fname)
-                if not r:
-                    print ">>>> ERROR!"
+                if getsize(fname) > 4998:
+                    print "Solution for problem {} too large, skipping.".format(id)
+                else:
+                    print "Submit " + fname
+                    r = submit_solution(id, fname)
+                    if not r:
+                        print ">>>> ERROR!"
 
 def usage():
     print "Available commands: hello; status; download; submit problem_id solution.txt; submitall"
