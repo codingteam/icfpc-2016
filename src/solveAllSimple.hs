@@ -2,6 +2,7 @@
 module Main where
 
 import Control.Monad
+import Control.Monad.State
 import System.FilePath
 import System.Environment
 
@@ -17,11 +18,13 @@ worker doneTxt dstDir inFile problem = do
       else do 
            let outFile = dstDir </> basename
            let polygon = head (pSilhouette problem)
-           runSimpleSolver polygon (\_ -> ()) (printSolution outFile)
-  where
-    printSolution outFile foldedPolys = 
-         writeFile outFile $ formatSolution $ foldedPolys
-
+           let initState = [([], unitSquare)]
+           let (ok, foldedPolys) = runState (simpleSolve1 polygon) initState
+           if ok
+             then do
+               putStrLn $ "Solved: " ++ basename
+               writeFile outFile $ formatSolution $ foldedPolys
+             else putStrLn $ basename ++ ": simple solver failed"
 
 main :: IO ()
 main = do
