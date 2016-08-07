@@ -110,15 +110,15 @@ doTranslate v =
         trace ("Translate <" ++ formatPolygon p ++ "> by <" ++ formatPoint v ++ ">") translatePolygon v p)
 
 -- | Check if polygon fits in unit square
--- Fail if not.
-checkFitsXY :: Polygon -> Solver ()
+checkFitsXY :: Polygon -> Solver Bool
 checkFitsXY poly = do
-  when (not $ isInUnitSquare poly) $
-    fail $ "Polygon does not fit in unit square"
+  let ok = isInUnitSquare poly
+  when (not ok) $
+    trace "Polygon does not fit in unit square" $ return ()
+  return ok
 
 -- | Check if size of polygon by X,Y is <= 1.
--- Fail if not.
-checkSizeXY :: Polygon -> Solver ()
+checkSizeXY :: Polygon -> Solver Bool
 checkSizeXY poly = do
   let xs = map fst poly
       ys = map snd poly
@@ -126,12 +126,13 @@ checkSizeXY poly = do
       maxy = maximum ys
       minx = minimum xs
       miny = minimum ys
-  when (maxx - minx > 1 || maxy - miny > 1) $
-    fail "Polygon size by X or y is > 1, we need to rotate it first"
+  let bad = maxx - minx > 1 || maxy - miny > 1
+  when (bad) $
+    trace "Polygon size by X or y is > 1, we need to rotate it first" $ return ()
+  return $ not bad
 
 translateToOrigin :: Polygon -> Solver ()
 translateToOrigin target = do
-  checkSizeXY target
   let minx = minimum (map fst target)
       miny = minimum (map snd target)
   doTranslate (minx, miny)
@@ -189,22 +190,29 @@ repeatUntil check action = do
     then repeatUntil check action
     else return ()
 
-simpleSolve1 :: Polygon -> Solver ()
-simpleSolve1 poly = do
-  translateToOrigin poly
-  -- checkFitsXY poly
-  let edges = zip poly (tail poly) ++ [(last poly, head poly)]
-      ctr = center poly
-  repeatUntil (isEverythingInside poly) $ do
-      forM_ edges $ \edge -> 
-        doAutoFold ctr (elongate edge)
-  removeSinglePoints
+simpleSolve1 :: Polygon -> Solver Bool
+simpleSolve1 target = do
+  sizeOk <- checkSizeXY target
+  when sizeOk $ do
+      translateToOrigin target
+      -- checkFitsXY target
+      let edges = zip target (tail target) ++ [(last target, head target)]
+          ctr = center target
+      repeatUntil (isEverythingInside target) $ do
+          forM_ edges $ \edge -> 
+            doAutoFold ctr (elongate edge)
+      removeSinglePoints
+  return sizeOk
 
 runSimpleSolver :: Polygon -> (Silhouette -> a) -> ([TransformedPolyon] -> IO b) -> IO a
 runSimpleSolver polygon withUnfolded withFolded = do
          let initState = [([], unitSquare)]
-         let foldedPolys = execState (simpleSolve1 polygon) initState
-             unfoldedPolys = map applyTransform foldedPolys
-         withFolded foldedPolys
-         return $ withUnfolded unfoldedPolys
+         let (ok, foldedPolys) = runState (simpleSolve1 polygon) initState
+         if ok
+           then do
+             let unfoldedPolys = map applyTransform foldedPolys
+             withFolded foldedPolys
+             return $ withUnfolded unfoldedPolys
+           else do
+            fail "Simple solver failed."
 
