@@ -80,7 +80,7 @@ An unfinished prototype where we wanted to find crease patterns by unfolding the
 skeleton back into a square.
 
 ```console
-$ stack exec -- unfoldingSolver problems/problem_10.txt
+$ stack exec -- unfoldingSolver ../problems/problem_10.txt
 ```
 
 ### `deconstruct`
