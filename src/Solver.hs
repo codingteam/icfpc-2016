@@ -135,6 +135,20 @@ translateToOrigin target = do
       miny = minimum (map snd target)
   doTranslate (minx, miny)
 
+isEverythingInside :: Polygon -> Solver Bool
+isEverythingInside target = do
+    tps <- get
+    let silhouette = concatMap snd tps
+        edges = zip target (tail target) ++ [(last target, head target)]
+    trace ("Check if [" ++ unwords (map formatPoint silhouette) ++"] is inside <" ++ formatPolygon target ++ ">") $ return ()
+    return $ all (atOneSide silhouette) edges
+  where
+    atOneSide silhouette edge =
+        and (traceX "left" edge $ map (\p -> p `relativeTo` edge `elem` [OnLine, OnLeft]) silhouette) ||
+        and (traceX "right" edge $ map (\p -> p `relativeTo` edge `elem` [OnLine, OnRight]) silhouette)
+
+    traceX side edge res = trace ("  check <" ++ formatSegment edge ++ ">: " ++ side ++ ": " ++ show res) res
+
 removeSinglePoints :: Solver ()
 removeSinglePoints = do
     modify (filter good)
@@ -169,18 +183,23 @@ center poly =
   where
     plus (x1,y1) (x2,y2) = (x1+x2, y1+y2)
 
+repeatUntil :: Monad m => m Bool -> m () -> m ()
+repeatUntil check action = do
+  action
+  res <- check
+  if not res
+    then repeatUntil check action
+    else return ()
+
 simpleSolve1 :: Polygon -> Solver ()
 simpleSolve1 poly = do
   translateToOrigin poly
   -- checkFitsXY poly
   let edges = zip poly (tail poly) ++ [(last poly, head poly)]
       ctr = center poly
-  forM_ edges $ \edge -> 
-    --doFoldRight (elongate edge)
-    --doFoldLeft edge
-    doAutoFold ctr (elongate edge)
-  forM_ edges $ \edge -> 
-    doAutoFold ctr (elongate edge)
+  repeatUntil (isEverythingInside poly) $ do
+      forM_ edges $ \edge -> 
+        doAutoFold ctr (elongate edge)
   removeSinglePoints
 
 runSimpleSolver :: Polygon -> (Silhouette -> a) -> ([TransformedPolyon] -> IO b) -> IO a
