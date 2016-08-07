@@ -103,7 +103,7 @@ Team members in randomized order:
 - Friedrich von Never: [ForNeVeR](https://github.com/ForNeVeR)
 - [grouzen](https://github.com/grouzen)
 - Ilya Portnov: [portnov](https://github.com/portnov)
-- [Minoru](https://github.com/Minoru)
+- Alexander Batischev: [Minoru](https://github.com/Minoru)
 - [Hagane](https://github.com/Hagane)
 
 [icfpc-2016]: http://2016.icfpcontest.org/
