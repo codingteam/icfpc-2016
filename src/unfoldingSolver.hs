@@ -4,7 +4,7 @@ import Control.Monad
 import Data.Graph.AStar
 import Data.List
 import Data.Maybe
-import Diagrams.Backend.SVG.CmdLine
+import Diagrams.Backend.SVG
 import Diagrams.Prelude hiding (distance, Point)
 import System.Environment
 
@@ -17,22 +17,46 @@ import Problem
 import Transform
 
 main :: IO ()
-main = mainWith mkDiagram
-
-mkDiagram :: FilePath -> IO (Diagram B)
-mkDiagram path = do
+main = do
+  [path] <- getArgs
   problem <- parseProblem path
-  let solution = aStar
-                   getCandidates
-                   distance
-                   heuristic
-                   goal
-                   (pSkeleton problem)
-  print solution
-  return $
-    case solution of
-      Just (_:s:_) -> (# lc red) $ foldr1 atop $ map drawSegment s
-      _ -> fromVertices []
+
+  let skel = pSkeleton problem
+  let points = nub . concat $ map (\(p1, p2) -> [p1, p2]) skel
+  let unfolds = findUnfoldCandidates points skel
+  let facets = map (findFacets skel) unfolds
+  let facetPairs = zip unfolds (map genPairs facets)
+
+  let haganeFacets = facetsFromSkeleton skel
+  let sharedEdges = findSharedEdges haganeFacets
+  forM_ haganeFacets $ \polygon -> do
+    putStrLn $ unwords [ show   polygon
+                       , show $ isFreePolygon polygon sharedEdges]
+
+  forM_ (zip [1..] facetPairs) $ \(i, (divider, pairs)) -> do
+    forM_ (zip [1..] pairs) $ \(j, (one, another)) -> do
+      let one' = flipSkeleton divider one
+      let another' = flipSkeleton divider another
+
+      renderSVG
+        ("pair_" ++ show i ++ "_" ++ show j ++ ".svg")
+        (mkWidth 500)
+        (frame 0.5
+          (        ((# lc green) $ foldr1 atop $ map drawSegment one)
+            `atop` ((# lc green) $ (# dashingO [1] 2) $ foldr1 atop $ map drawSegment one')
+            `atop` ((# lc red)   $ foldr1 atop $ map drawSegment another)
+            `atop` ((# lc red)   $ (# dashingO [1] 2) $ foldr1 atop $ map drawSegment another')
+            `atop` ((# lc black) $ drawSegment divider)))
+
+  let solutions = getCandidates (pSkeleton problem)
+  putStrLn $ unwords ["Found", show $ length solutions, "solutions"]
+  {-
+  forM_ (zip [1..] (S.toList solutions)) $ \(i, solution) -> do
+      renderSVG
+        ("result_" ++ show i ++ ".svg")
+        (mkWidth 500)
+        (frame 2 ((# lc red) $ foldr1 atop $ map drawSegment solution))
+  -}
 
 for :: [a] -> (a -> b) -> [b]
 for = flip map
