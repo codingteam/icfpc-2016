@@ -100,12 +100,19 @@ Team
 
 Team members in randomized order:
 
--   Friedrich von Never: [ForNeVeR](https://github.com/ForNeVeR)
-    ([report](https://fornever.me/posts/2016-08-08-icfpc-2016-report_ru.html))
--   [grouzen](https://github.com/grouzen)
--   Ilya Portnov: [portnov](https://github.com/portnov)
--   Alexander Batischev: [Minoru](https://github.com/Minoru)
--   [Hagane](https://github.com/Hagane)
+- Friedrich von Never ([ForNeVeR][fornever]): [report][report-fornever]
+- [grouzen](https://github.com/grouzen)
+- Ilya Portnov ([portnov][]): [report][report-portnov]
+- Alexander Batischev ([Minoru][minoru]): [report][report-minoru]
+- [Hagane][hagane]: [report][report-hagane]
 
+[fornever]: https://github.com/ForNeVeR
+[hagane]: https://github.com/Hagane
 [icfpc-2016]: http://2016.icfpcontest.org/
+[minoru]: https://github.com/Minoru
+[portnov]: https://github.com/portnov
+[report-fornever]: https://fornever.me/posts/2016-08-08-icfpc-2016-report_ru.html
+[report-hagane]: http://vk.com/wall226611640_1001
+[report-minoru]: https://blog.debiania.in.ua/posts/2016-08-08-icfpc-2016.html
+[report-portnov]: http://iportnov.blogspot.ru/2016/08/icfpc-2016.html
 [stack]: https://www.haskellstack.org/
