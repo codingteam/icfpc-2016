@@ -3,6 +3,8 @@ icfpc-2016
 
 This is our solution for [ICFP Contest 2016][icfpc-2016].
 
+We were about 44th in the final qualification results before end of the contest.
+
 Solution
 --------
 
